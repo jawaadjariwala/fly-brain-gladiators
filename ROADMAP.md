@@ -57,7 +57,7 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
   - **Frozen.** If a fighter behaves badly the fix is its biological profile, never this file
 - [x] Chunked simulation loop with state carried across ticks — each fighter's brain advances 20 ms per tick with membrane state intact
 - [x] Fighter builder (`fbg/fighters.py`) — profiles applied as lesions, neuromodulator tonic drive, sensory gains and escape threshold
-- [ ] Spike raster overlay
+- [x] Fight renderer (`scripts/render_fight.py`) — arena above, both brains below, health bars and action labels. Real-time playback, deterministic from a seed so any match can be re-rendered
 
 ### Phase 3 — Roster
 - [ ] Load fighter profiles from `fighters/*.json`

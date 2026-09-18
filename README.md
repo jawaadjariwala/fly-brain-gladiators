@@ -12,7 +12,9 @@ Two gladiators fight in an arena. Both are controlled by the real fruit fly conn
 
 *The link is causal, not decorative: the object's angular expansion rate sets the loom-detector firing rate, and the simulation advances in 4 ms slices with membrane state carried across them.*
 
-<!-- TODO: replace with the arena itself once Phase 2 lands. -->
+![Two fighters in the arena, with both brains rendered below. Health bars, action labels and live spiking.](docs/fight.png)
+
+*A match. The arena above, both fighters' brains below. Every tick the arena tells each brain what it sees, advances it 20 ms with membrane state intact, and reads its descending and motor neurons. Nothing between the sensory encoding and the motor readout is designed.*
 
 ---
 

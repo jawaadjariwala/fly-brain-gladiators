@@ -118,6 +118,19 @@ class Event:
     detail: dict = field(default_factory=dict)
 
 
+@dataclass
+class Frame:
+    """Everything needed to redraw one tick of a match."""
+
+    tick: int
+    ax: float; ay: float; a_heading: float; a_health: float
+    bx: float; by: float; b_heading: float; b_health: float
+    a_action: str = "-"
+    b_action: str = "-"
+    a_spikes: np.ndarray = field(default_factory=lambda: np.array([], np.int32))
+    b_spikes: np.ndarray = field(default_factory=lambda: np.array([], np.int32))
+
+
 class Match:
     """A single fight. Deterministic given the fighters and seed."""
 
@@ -128,6 +141,8 @@ class Match:
         self.max_ms = max_ms
         self.tick = 0
         self.events: list[Event] = []
+        self.frames: list[Frame] = []
+        self.record_spikes = False
         rng = np.random.default_rng(seed)
         # start facing each other, separated
         for f, sign in ((a, -1), (b, 1)):
@@ -187,14 +202,31 @@ class Match:
             self._drive_rival(me, dist)
             seen[me.name] = (dist, bearing)
 
-        actions = {}
+        actions, spikes = {}, {}
         for f in (self.a, self.b):
             rec = f.net.run(TICK_MS)
             actions[f.name] = f.decoder(rec, TICK_MS)
+            if self.record_spikes:
+                spikes[f.name] = (np.concatenate(rec.indices) if rec.indices
+                                  else np.array([], np.int32))
 
         for me, you in ((self.a, self.b), (self.b, self.a)):
             self._apply(me, you, actions[me.name], *seen[me.name], t_ms)
 
+        def label(act):
+            if act.dodge: return "DODGE"
+            if act.attack: return "ATTACK"
+            if act.guard: return "GUARD"
+            return "-"
+
+        self.frames.append(Frame(
+            self.tick,
+            self.a.x, self.a.y, self.a.heading, max(self.a.health, 0.0),
+            self.b.x, self.b.y, self.b.heading, max(self.b.health, 0.0),
+            label(actions[self.a.name]), label(actions[self.b.name]),
+            spikes.get(self.a.name, np.array([], np.int32)),
+            spikes.get(self.b.name, np.array([], np.int32)),
+        ))
         self.tick += 1
 
     def _apply(self, f: Fighter, other: Fighter, act, dist: float,
