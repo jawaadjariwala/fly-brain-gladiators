@@ -61,6 +61,8 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 - [ ] Multi-trial aggregation (the input is stochastic; single matches are noise)
 
 ### Phase 4 — Rendering
+- [x] Anatomical activity renderer (`fbg/render.py`) — every neuron drawn at its real soma position, brain above and nerve cord below
+- [x] Animated activity film (`scripts/animate.py`) — 1080×1920 vertical, quiet baseline then stimulus onset, spike trails with decay
 - [ ] Split-screen renderer: arena, spike raster, aggression state
 - [ ] Event log with timestamped neural and game events
 - [ ] Automated highlight clipping from the event log
