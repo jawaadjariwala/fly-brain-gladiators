@@ -4,7 +4,11 @@ Two gladiators fight in an arena. Both are controlled by the real fruit fly conn
 
 **Nothing is trained.** No reinforcement learning, no reward function, no learned policy sitting on top of the network. The only things chosen were which neurons read the arena and which neurons swing the weapon. Everything else is the fly's own wiring.
 
-<!-- TODO: demo GIF goes here, above the fold. Split screen: arena + live spike raster. -->
+![Loom detectors stimulated at 20 Hz. Cyan are the LC4/LPLC2 loom detectors in the optic lobes, amber are descending neurons in the central brain, pink are motor neurons in the ventral nerve cord. Each dot is a neuron drawn at its real anatomical soma position.](docs/activity-cascade.png)
+
+*Stimulating the loom detectors at 20 Hz. Every dot is a neuron at its actual soma position in the fly. Cyan are the LC4/LPLC2 loom detectors, sitting in both optic lobes because that is where they are. Amber are descending neurons, pink are motor neurons in the nerve cord. Over 100 ms you can watch the signal cross from brain to cord.*
+
+<!-- TODO: replace with an animated arena + raster once Phase 2 lands. -->
 
 ---
 
