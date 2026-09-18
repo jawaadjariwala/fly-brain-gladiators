@@ -1,4 +1,9 @@
-"""Split-screen activity film: an object approaches, and the brain responds.
+"""Activity film: an object approaches, and the brain responds.
+
+Two layouts:
+    --split  (default)  stimulus panel on top, brain and cord below
+    --full              no stimulus panel; brain and cord fill the frame
+
 
 The top panel shows what the fly sees. The bottom panels show its brain and
 nerve cord. The link is causal, not decorative — the object's angular expansion
@@ -11,6 +16,7 @@ loop the arena will use.
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -44,6 +50,9 @@ def draw_glow(ax, x, y, colour, size, alpha, depth=None):
 
 
 def main():
+    split = "--full" not in sys.argv
+    out_name = "loom_split_vertical" if split else "loom_cascade_vertical"
+    print(f"layout: {'split-screen' if split else 'full-frame'}  ->  {out_name}.mp4")
     OUT.mkdir(exist_ok=True)
     frames = OUT / "frames"; frames.mkdir(exist_ok=True)
     for f in frames.glob("*.png"):
@@ -102,25 +111,30 @@ def main():
         step = (f + 1) * steps_per_tick
         fig = plt.figure(figsize=(6, 10.667), dpi=100, facecolor=BACKGROUND)
 
-        # ---- what the fly sees -------------------------------------------
-        ax_eye = fig.add_axes([0.10, 0.655, 0.80, 0.235])
-        ax_eye.set_facecolor("#05070a")
-        ax_eye.set_xlim(-1, 1); ax_eye.set_ylim(-1, 1); ax_eye.set_aspect("equal")
-        half_raw = np.tan(theta[f] / 2.0) / np.tan(np.radians(55) / 2.0)
-        half = float(np.clip(half_raw, 0.012, 0.92))   # never fills the panel
-        prox = float(np.clip(half_raw, 0, 1.0))
-        ax_eye.add_patch(plt.Circle((0, 0), half, color="#e8eef5",
-                                    alpha=0.93, zorder=3))
-        for k in (1.35, 1.9):
-            ax_eye.add_patch(plt.Circle((0, 0), min(half * k, 0.99),
-                                        color="#3fd0e3", alpha=0.13 * prox, zorder=2))
-        ax_eye.set_xticks([]); ax_eye.set_yticks([])
-        for sp in ax_eye.spines.values():
-            sp.set_color("#1d242e")
+        # ---- what the fly sees (split layout only) ------------------------
+        if split:
+            ax_eye = fig.add_axes([0.10, 0.655, 0.80, 0.235])
+            ax_eye.set_facecolor("#05070a")
+            ax_eye.set_xlim(-1, 1); ax_eye.set_ylim(-1, 1); ax_eye.set_aspect("equal")
+            half_raw = np.tan(theta[f] / 2.0) / np.tan(np.radians(55) / 2.0)
+            half = float(np.clip(half_raw, 0.012, 0.92))   # never fills the panel
+            prox = float(np.clip(half_raw, 0, 1.0))
+            ax_eye.add_patch(plt.Circle((0, 0), half, color="#e8eef5",
+                                        alpha=0.93, zorder=3))
+            for k in (1.35, 1.9):
+                ax_eye.add_patch(plt.Circle((0, 0), min(half * k, 0.99),
+                                            color="#3fd0e3", alpha=0.13 * prox, zorder=2))
+            ax_eye.set_xticks([]); ax_eye.set_yticks([])
+            for sp in ax_eye.spines.values():
+                sp.set_color("#1d242e")
 
         # ---- brain and cord ----------------------------------------------
-        ax_brain = fig.add_axes([0.02, 0.375, 0.96, 0.215])
-        ax_cord = fig.add_axes([0.32, 0.075, 0.36, 0.30])
+        if split:
+            ax_brain = fig.add_axes([0.02, 0.375, 0.96, 0.215])
+            ax_cord = fig.add_axes([0.32, 0.075, 0.36, 0.30])
+        else:
+            ax_brain = fig.add_axes([0.01, 0.585, 0.98, 0.265])
+            ax_cord = fig.add_axes([0.275, 0.085, 0.45, 0.47])
         window = (steps > step - trail) & (steps <= step)
         w_steps, w_idx = steps[window], idxs[window]
         age = (step - w_steps) / max(trail, 1) if w_idx.size else None
@@ -149,20 +163,27 @@ def main():
                  color="#e6ebf1", fontsize=16, fontweight="bold")
         fig.text(0.5, 0.940, "a real fly brain, 166,700 neurons, nothing trained",
                  ha="center", color="#7a8894", fontsize=9.5)
-        fig.text(0.10, 0.905, "WHAT THE FLY SEES", color="#5b6775", fontsize=9)
-        fig.text(0.90, 0.905, f"{dist_mm[f]:5.0f} mm away", color="#5b6775",
-                 fontsize=9, ha="right")
-        fig.text(0.02, 0.598, "BRAIN", color="#5b6775", fontsize=9)
-        fig.text(0.02, 0.385, "NERVE CORD", color="#5b6775", fontsize=9)
+        if split:
+            fig.text(0.10, 0.905, "WHAT THE FLY SEES", color="#5b6775", fontsize=9)
+            fig.text(0.90, 0.905, f"{dist_mm[f]:5.0f} mm away", color="#5b6775",
+                     fontsize=9, ha="right")
+            fig.text(0.02, 0.598, "BRAIN", color="#5b6775", fontsize=9)
+            fig.text(0.02, 0.385, "NERVE CORD", color="#5b6775", fontsize=9)
+        else:
+            fig.text(0.03, 0.872, "BRAIN", color="#5b6775", fontsize=10)
+            fig.text(0.03, 0.568, "NERVE CORD", color="#5b6775", fontsize=10)
+            fig.text(0.97, 0.872, f"{dist_mm[f]:5.0f} mm away", color="#5b6775",
+                     fontsize=9, ha="right")
 
         bar = float(np.clip((rate_hz[f] - 1) / 21.0, 0, 1))
-        fig.patches.append(plt.Rectangle((0.10, 0.638), 0.80, 0.007,
+        bar_y, bar_x, bar_w = (0.638, 0.10, 0.80) if split else (0.905, 0.10, 0.80)
+        fig.patches.append(plt.Rectangle((bar_x, bar_y), bar_w, 0.007,
                                          transform=fig.transFigure,
                                          facecolor="#1d242e", zorder=5))
-        fig.patches.append(plt.Rectangle((0.10, 0.638), 0.80 * bar, 0.007,
+        fig.patches.append(plt.Rectangle((bar_x, bar_y), bar_w * bar, 0.007,
                                          transform=fig.transFigure,
                                          facecolor="#3fd0e3", zorder=6))
-        fig.text(0.10, 0.617, f"loom detector drive  {rate_hz[f]:4.1f} Hz",
+        fig.text(bar_x, bar_y - 0.021, f"loom detector drive  {rate_hz[f]:4.1f} Hz",
                  color="#7a8894", fontsize=8.5)
 
         legend = [("loom", "loom detectors — in the eyes"),
@@ -180,7 +201,7 @@ def main():
             print(f"  {f}/{n}")
 
     print("encoding...")
-    mp4 = OUT / "loom_split_vertical.mp4"
+    mp4 = OUT / f"{out_name}.mp4"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(FPS),
                     "-i", str(frames / "f%05d.png"),
                     "-vf", "scale=1080:1920:flags=lanczos", "-c:v", "libx264",

@@ -62,7 +62,7 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 
 ### Phase 4 — Rendering
 - [x] Anatomical activity renderer (`fbg/render.py`) — every neuron drawn at its real soma position, brain above and nerve cord below
-- [x] Animated activity film (`scripts/animate.py`) — 1080×1920 vertical split-screen: what the fly sees above, brain and nerve cord below, with glow and depth shading
+- [x] Animated activity film (`scripts/animate.py`) — 1080×1920 vertical, glow and depth shading. Two layouts: `--split` (default; what the fly sees above, brain and cord below) and `--full` (no stimulus panel, brain and cord fill the frame)
 - [x] Looming stimulus model (`fbg/stimulus.py`) — angular expansion rate drives loom-detector firing rate, so the visual and the simulation are causally linked rather than rendered side by side
   - The simulation advances in 4 ms slices with drive updated each slice, carrying membrane state across — the same loop the arena will use
 - [ ] Split-screen renderer: arena, spike raster, aggression state
