@@ -35,7 +35,12 @@ These are deliberate and shape everything else.
 - [x] **Control: the same stimulus on shuffled wiring**
   - Real wiring **179.2 Hz**, shuffled **0.0 Hz**
   - Target indices permuted globally, preserving out-degree and the weight distribution. Weaker than a Maslov-Sneppen degree-preserving null, but enough to show the response is not a generic property of the graph statistics
-- [ ] Extract the working subgraph: optic lobe, loom detectors, aggression circuits, descending neurons, VNC motor pools
+- [x] Extract the working subgraph
+  - Seeds: loom detectors (LC4/LPLC2/LC6, 435), aggression (pC1, 156), octopaminergic (101), all descending neurons (1,314), all VNC motor neurons (708)
+  - Expanded one hop through edges of ≥5 synapses, keeping only neurons both reachable from and able to reach a seed
+  - **21,370 neurons (12.8%), 3.97M edges (16.2%)** — every seed retained
+  - **5.1× faster: 1.67 s per biological second**
+  - Validated: all four readouts match the full graph within trial-to-trial noise (`scripts/validate_subgraph.py`)
 - [ ] **Validation: a second published circuit.** MaleCNS labels gustatory neurons anatomically (LB1–LB4 bristle types) rather than functionally, so there is no direct "sugar GRN" tag to replicate Shiu et al.'s sugar → MN9 result against. MN9 itself is present (2 neurons, `cb_motor`). Needs a mapping from bristle type to sugar-sensing before this can be a real replication
 
 Phase 1 is not complete until both validations pass. Everything downstream depends on the simulation being correct, and an incorrect one produces plausible-looking output.
@@ -70,6 +75,8 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 Genuinely unresolved, and contributions or opinions are welcome:
 
 **Does the raw circuit produce legible behavior?** Untrained connectome output may be too erratic to read as fighting. If so, the mitigation is presentation — slower pacing, clearer visualization — not adding a trained controller.
+
+**Is MLX worth adding?** The engine is NumPy on CPU. Roughly 67% of the work is elementwise arithmetic over every neuron each step, which a GPU parallelises — but Amdahl's law caps the total win at ~3×, realistically 2–2.5×. At the current 1.67 s/bs a full 6-fighter round-robin with 30 trials runs about 6 hours. Whether that needs fixing depends on fight duration and trial count, neither of which is settled. Deferred until Phase 3 makes the requirement concrete. If added, the NumPy engine stays as the reference implementation, since MLX is Apple-only.
 
 **How should looming intensity be encoded?** The circuit saturates easily: 11,224 synapses from the loom detectors deliver ~3,087 mV per volley against a 7 mV threshold, 441× over. Driving all 311 detectors at 100 Hz pins DNp01 near its refractory ceiling. The usable graded range is roughly 5–20 Hz across the full population, or 100 Hz across 2–10% of it. Which of those better represents an approaching opponent is unresolved.
 
