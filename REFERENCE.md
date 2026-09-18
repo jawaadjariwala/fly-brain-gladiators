@@ -137,6 +137,42 @@ This project's design addresses the first three. **The fourth is untested here**
 
 ---
 
+## Ecosystem survey
+
+Reviewed the 91 repositories in `awesome-fly` (18 Sep 2026). Two patterns:
+
+1. **Everything mature is general ecosystem infrastructure** built by labs over years — navis, flybody, neuPrint clients, connectome-interpreter.
+2. **Everything MaleCNS-specific is two weeks old** with 1–2 stars. Useful to read, risky to depend on.
+
+### Validation targets
+
+`Kisame76/drosophila-brain-mlx` reimplements the Shiu model in MLX for Apple Silicon and reports **0.29 s per biological second on an M4 Pro** against **2.07 s** for Brian2 on the same machine, with matched parameters and tick ordering.
+
+It publishes numbers this project can validate against:
+
+| Condition | MN9 firing rate |
+|---|---|
+| Real FlyWire wiring, 21 right sugar neurons at 100 Hz Poisson | **67.30 Hz** |
+| Degree-preserving shuffled copy, same input | **silent** |
+| Sugar neurons themselves | ~99 Hz in both |
+
+Our engine should reproduce the first row. The third row is a useful sanity check that stimulation is being applied correctly.
+
+### Why this project still needs its own engine
+
+Both the reference model and the MLX reimplementation run **batch experiments** — a fixed 1000 ms trial with constant input, analysed afterwards. The arena needs **chunked simulation with membrane state carried across game ticks** (see METHODS.md §3.4). That is a different architecture, so the engine is ours; the published numbers are the ground truth.
+
+### Visualization — already unlocked
+
+The annotations table carries `somaLocation`, a 3D coordinate per neuron:
+
+- **139,662 / 166,700 neurons (83.8%)** have soma positions
+- **100% coverage** on LC4, LPLC2, DNp01, DNa02, DNp09; 703/708 motor neurons
+- CNS spans ~91 × 64 × 124 µm
+- `somaNeuromere` separates brain (`CG`) from leg neuromeres (`T1`/`T2`/`T3`)
+
+Enough to render an activity film — every neuron as a dot at its real anatomical position, lighting as it spikes, brain above and nerve cord below — with no additional dependency.
+
 ## Tooling
 
 | Tool | Purpose |
@@ -148,6 +184,9 @@ This project's design addresses the first three. **The fourth is untested here**
 | `flybody` | DeepMind/Janelia MuJoCo fly body — potential 3D embodiment |
 | `Brian2` | Reference simulator — correct but slow; used for cross-validation |
 | `awesome-fly` | Community catalogue of the ecosystem |
+| `connectome_interpreter` | Path finding and effective connectivity at whole-brain scale — for tracing routes not known in advance |
+| `navis` | Neuron morphology analysis and 3D rendering |
+| `neuVid` | Blender-rendered anatomical video. High production value, heavy dependency |
 
 ---
 
