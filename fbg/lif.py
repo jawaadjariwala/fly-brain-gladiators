@@ -108,8 +108,14 @@ class Network:
         # ring buffer holding synaptic input in flight
         self.delay_buf = np.zeros((p.delay_steps, self.n), dtype=np.float32)
         self.step = 0
+        self.clear_poisson()
+        if not hasattr(self, "_tonic") or self._tonic is Network._tonic:
+            self._tonic = {}
 
     # -- stimulation ---------------------------------------------------------
+    # Two independent channels. `sensory` changes every tick as the world
+    # changes; `tonic` is a standing drive used for neuromodulation, which in
+    # the fly acts continuously rather than as a stimulus.
     def set_poisson(self, indices: np.ndarray, rate_hz: float) -> None:
         """Drive neurons as a Poisson spike source at `rate_hz`.
 
@@ -119,15 +125,30 @@ class Network:
         as a per-step spike probability, with the refractory period bypassed for
         stimulated neurons (as the reference does).
         """
-        self.stim_idx = np.asarray(indices, dtype=np.int32)
-        self.stim_prob = rate_hz * self.p.dt / 1000.0
+        self._sensory = (np.asarray(indices, dtype=np.int32),
+                         rate_hz * self.p.dt / 1000.0)
 
     def clear_poisson(self) -> None:
-        self.stim_idx = np.array([], dtype=np.int32)
-        self.stim_prob = 0.0
+        self._sensory = (np.array([], dtype=np.int32), 0.0)
 
-    stim_idx: np.ndarray = np.array([], dtype=np.int32)
-    stim_prob: float = 0.0
+    def add_tonic(self, name: str, indices: np.ndarray, rate_hz: float) -> None:
+        """Set a named standing drive that persists across ticks.
+
+        Channels are independent, so baseline locomotion, neuromodulation and
+        rival detection can coexist and be updated separately. Setting a rate
+        of zero removes the channel.
+        """
+        if len(indices) == 0 or rate_hz <= 0:
+            self._tonic.pop(name, None)
+            return
+        self._tonic[name] = (np.asarray(indices, dtype=np.int32),
+                             rate_hz * self.p.dt / 1000.0)
+
+    def clear_tonic(self) -> None:
+        self._tonic = {}
+
+    _sensory: tuple = (np.array([], dtype=np.int32), 0.0)
+    _tonic: dict = {}
 
     # -- the loop ------------------------------------------------------------
     def run(self, duration_ms: float, record: bool = True) -> SpikeRecord:
@@ -157,12 +178,12 @@ class Network:
             # 4. threshold
             fired = np.flatnonzero((self.v > p.v_threshold) & ~in_refractory)
 
-            # 5. stimulated neurons fire as a Poisson process, refractory bypassed
-            if self.stim_idx.size:
-                draw = self.rng.random(self.stim_idx.size) < self.stim_prob
-                forced = self.stim_idx[draw]
-                if forced.size:
-                    fired = np.union1d(fired, forced)
+            # 5. driven neurons fire as a Poisson process, refractory bypassed
+            for idx, prob in [self._sensory, *self._tonic.values()]:
+                if idx.size and prob > 0:
+                    forced = idx[self.rng.random(idx.size) < prob]
+                    if forced.size:
+                        fired = np.union1d(fired, forced)
 
             # 6. reset and propagate
             if fired.size:

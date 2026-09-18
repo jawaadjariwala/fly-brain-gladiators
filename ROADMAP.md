@@ -46,8 +46,8 @@ These are deliberate and shape everything else.
 Phase 1 is not complete until both validations pass. Everything downstream depends on the simulation being correct, and an incorrect one produces plausible-looking output.
 
 ### Phase 2 — Arena
-- [ ] 2D top-down arena with deterministic physics
-- [ ] Weapon classes: murmillo, hoplomachus, thraex
+- [x] 2D top-down arena with deterministic physics (`fbg/arena.py`)
+- [x] Weapon classes: murmillo, hoplomachus, thraex — reach, windup, recovery, block arc and mobility from the historical loadouts
 - [x] Sensory encoding — arena state to Poisson input rates (`fbg/stimulus.py`)
   - Angular expansion rate sets firing rate; **retinotopic recruitment** sets how many detectors are driven, scaling with the object's angular area
 - [x] Motor decoding — descending and motor neuron rates to actions (`fbg/motor.py`)
@@ -55,7 +55,8 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
   - Escape threshold anchored to biology: real flies initiate escape at roughly 20–40° angular size, and the chosen GF rate produces first escape at **31°**
   - Escape refractory of 150 ms — a physical constraint on the body, not a tunable
   - **Frozen.** If a fighter behaves badly the fix is its biological profile, never this file
-- [ ] Chunked simulation loop with state carried across ticks
+- [x] Chunked simulation loop with state carried across ticks — each fighter's brain advances 20 ms per tick with membrane state intact
+- [x] Fighter builder (`fbg/fighters.py`) — profiles applied as lesions, neuromodulator tonic drive, sensory gains and escape threshold
 - [ ] Spike raster overlay
 
 ### Phase 3 — Roster
@@ -79,6 +80,18 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 - [ ] Match scheduling and publication
 - [ ] Prediction interface (virtual points, no cash value)
 - [ ] Replay viewer and result archive
+
+## Modelling choices
+
+Decisions this project imposes rather than reads from the connectome. Each is here because the alternative was a simulation that does nothing.
+
+**Baseline locomotor drive (8 Hz to descending neurons).** With no drive, leg motor rate is 0 and the fighters never move. Flies walk spontaneously; descending neurons and the nerve cord's pattern generators are tonically active.
+
+**Arena scale (25 mm radius, 14 mm start).** At 36 mm an opponent subtends under 5° and recruits under 1% of the loom detectors, so neither fighter ever sees the other — and neither can approach, because seeing is what drives approach. Real fly aggression assays use chambers a couple of centimetres across.
+
+**Rival detection driving pC1 (proximity-scaled, up to 11 Hz).** Measured: pC1 receives essentially nothing from looming alone — 0.0 to 0.3 Hz against a 6 Hz attack gate — so without this no fighter ever attacks. Real fly aggression is triggered by detecting a rival male through pheromone (cVA via Or67d) and vision. There is no pheromone channel here, so proximity stands in for it.
+
+**Octopamine as tonic drive** to the octopaminergic population rather than gain modulation (METHODS §3.2, option A).
 
 ## Open questions
 

@@ -143,9 +143,13 @@ class Decoder:
     tunable parameter. Everything else is a pure function of the spike rates.
     """
 
-    def __init__(self, pools: Pools, n_neurons: int) -> None:
+    def __init__(self, pools: Pools, n_neurons: int,
+                 giant_fiber_hz: float = GIANT_FIBER_HZ) -> None:
         self.pools = pools
         self.n = n_neurons
+        # A fighter profile may scale this — that is a property of its nervous
+        # system (how readily its escape neuron fires), not a tuned parameter.
+        self.giant_fiber_hz = giant_fiber_hz
         self.ms_since_escape = ESCAPE_REFRACTORY_MS
 
     def reset(self) -> None:
@@ -154,7 +158,7 @@ class Decoder:
     def __call__(self, record, window_ms: float) -> Action:
         self.ms_since_escape += window_ms
         gf_rate = _rate(record, self.pools.giant_fiber, self.n)
-        if (gf_rate >= GIANT_FIBER_HZ
+        if (gf_rate >= self.giant_fiber_hz
                 and self.ms_since_escape >= ESCAPE_REFRACTORY_MS):
             self.ms_since_escape = 0.0
             # The giant fiber is a command neuron: escape overrides everything.
