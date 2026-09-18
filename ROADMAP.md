@@ -1,6 +1,6 @@
 # Roadmap
 
-Current status: **pre-implementation.** Documentation and design are in place; the simulation is not built yet.
+Current status: **Phase 1 in progress.** The connectome loads and the signed weight matrix builds and validates. The simulation itself is not written yet.
 
 ## Design constraints
 
@@ -17,7 +17,13 @@ These are deliberate and shape everything else.
 ## Phases
 
 ### Phase 1 — Simulation core
-- [ ] Load MaleCNS connectivity and build a signed sparse weight matrix
+- [x] Load MaleCNS connectivity and build a signed sparse weight matrix
+  - 166,700 neurons, 25,582,938 neuron-to-neuron edges — both match the published figures
+  - Signs from predicted neurotransmitter: acetylcholine excitatory; GABA, glutamate and histamine inhibitory; monoamines excluded from fast transmission
+  - 97.8% of neurons carry a usable sign; 60/40 excitatory/inhibitory
+  - Builds in ~13s, caches to a 78 MB npz
+- [x] Confirm the escape circuit exists in the data
+  - All 311 LC4/LPLC2 neurons connect **monosynaptically** to DNp01 (giant fiber), +11,224 synapses, entirely excitatory
 - [ ] Extract the working subgraph: optic lobe, loom detectors, aggression circuits, descending neurons, VNC motor pools
 - [ ] Implement leaky integrate-and-fire using the Shiu et al. parameterization
 - [ ] Event-driven propagation — only spiking neurons push current

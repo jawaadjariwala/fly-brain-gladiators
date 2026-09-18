@@ -34,3 +34,6 @@ venv/
 
 # macOS
 .DS_Store
+
+# built artifacts
+*.partial
