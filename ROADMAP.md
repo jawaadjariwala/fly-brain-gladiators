@@ -48,7 +48,7 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 ### Phase 2 — Arena
 - [ ] 2D top-down arena with deterministic physics
 - [ ] Weapon classes: murmillo, hoplomachus, thraex
-- [ ] Sensory encoding — arena state to Poisson input rates
+- [x] Sensory encoding — arena state to Poisson input rates *(looming channel done; see `fbg/stimulus.py`)*
 - [ ] Motor decoding — descending neuron spike rates to actions
 - [ ] Chunked simulation loop with state carried across ticks
 - [ ] Spike raster overlay
@@ -62,7 +62,9 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 
 ### Phase 4 — Rendering
 - [x] Anatomical activity renderer (`fbg/render.py`) — every neuron drawn at its real soma position, brain above and nerve cord below
-- [x] Animated activity film (`scripts/animate.py`) — 1080×1920 vertical, quiet baseline then stimulus onset, spike trails with decay
+- [x] Animated activity film (`scripts/animate.py`) — 1080×1920 vertical split-screen: what the fly sees above, brain and nerve cord below, with glow and depth shading
+- [x] Looming stimulus model (`fbg/stimulus.py`) — angular expansion rate drives loom-detector firing rate, so the visual and the simulation are causally linked rather than rendered side by side
+  - The simulation advances in 4 ms slices with drive updated each slice, carrying membrane state across — the same loop the arena will use
 - [ ] Split-screen renderer: arena, spike raster, aggression state
 - [ ] Event log with timestamped neural and game events
 - [ ] Automated highlight clipping from the event log

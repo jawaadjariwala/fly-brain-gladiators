@@ -8,7 +8,11 @@ Two gladiators fight in an arena. Both are controlled by the real fruit fly conn
 
 *Stimulating the loom detectors at 20 Hz. Every dot is a neuron at its actual soma position in the fly. Cyan are the LC4/LPLC2 loom detectors, sitting in both optic lobes because that is where they are. Amber are descending neurons, pink are motor neurons in the nerve cord. Over 100 ms you can watch the signal cross from brain to cord.*
 
-<!-- TODO: replace with an animated arena + raster once Phase 2 lands. -->
+![An object approaching, and the fly brain responding. Top: what the fly sees. Below: brain and nerve cord, with loom detectors in cyan, descending neurons in amber and motor neurons in pink.](docs/looming-response.png)
+
+*The link is causal, not decorative: the object's angular expansion rate sets the loom-detector firing rate, and the simulation advances in 4 ms slices with membrane state carried across them.*
+
+<!-- TODO: replace with the arena itself once Phase 2 lands. -->
 
 ---
 
