@@ -51,7 +51,7 @@ def draw_glow(ax, x, y, colour, size, alpha, depth=None):
 
 def main():
     split = "--full" not in sys.argv
-    out_name = "loom_split_vertical" if split else "loom_cascade_vertical"
+    out_name = "loom_split" if split else "loom_fullframe"
     print(f"layout: {'split-screen' if split else 'full-frame'}  ->  {out_name}.mp4")
     OUT.mkdir(exist_ok=True)
     frames = OUT / "frames"; frames.mkdir(exist_ok=True)
