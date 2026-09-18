@@ -1,6 +1,6 @@
 # Roadmap
 
-Current status: **Phase 1 in progress.** The connectome loads and the signed weight matrix builds and validates. The simulation itself is not written yet.
+Current status: **Phase 1 mostly complete.** The connectome loads, the LIF engine runs, and the escape circuit fires — and does so only on real wiring. Remaining: subgraph extraction for speed, and a second validation against a published circuit.
 
 ## Design constraints
 
@@ -24,11 +24,19 @@ These are deliberate and shape everything else.
   - Builds in ~13s, caches to a 78 MB npz
 - [x] Confirm the escape circuit exists in the data
   - All 311 LC4/LPLC2 neurons connect **monosynaptically** to DNp01 (giant fiber), +11,224 synapses, entirely excitatory
+- [x] Implement leaky integrate-and-fire using the Shiu et al. parameterization
+  - Resumable: `run()` advances a slice of time and leaves state intact, so the arena loop can interleave simulation with changing input
+  - Event-driven: only spiking neurons propagate
+  - ~9 s per biological second on an M4 over the full 166,700-neuron graph
+- [x] **Validation: LC4/LPLC2 stimulation drives the giant fiber**
+  - 311 loom neurons at 20 Hz → DNp01 at **179.2 ± 2.4 Hz**
+  - DNa02 (steering) stays at **0.0 Hz** — the response is circuit-specific, not general excitation
+  - VNC motor pool reaches 12 Hz, so the command propagates brain → descending → cord
+- [x] **Control: the same stimulus on shuffled wiring**
+  - Real wiring **179.2 Hz**, shuffled **0.0 Hz**
+  - Target indices permuted globally, preserving out-degree and the weight distribution. Weaker than a Maslov-Sneppen degree-preserving null, but enough to show the response is not a generic property of the graph statistics
 - [ ] Extract the working subgraph: optic lobe, loom detectors, aggression circuits, descending neurons, VNC motor pools
-- [ ] Implement leaky integrate-and-fire using the Shiu et al. parameterization
-- [ ] Event-driven propagation — only spiking neurons push current
-- [ ] **Validation: replicate the published sugar → MN9 result**
-- [ ] **Validation: confirm LC4/LPLC2 stimulation drives the giant fiber**
+- [ ] **Validation: a second published circuit.** MaleCNS labels gustatory neurons anatomically (LB1–LB4 bristle types) rather than functionally, so there is no direct "sugar GRN" tag to replicate Shiu et al.'s sugar → MN9 result against. MN9 itself is present (2 neurons, `cb_motor`). Needs a mapping from bristle type to sugar-sensing before this can be a real replication
 
 Phase 1 is not complete until both validations pass. Everything downstream depends on the simulation being correct, and an incorrect one produces plausible-looking output.
 
@@ -62,6 +70,8 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 Genuinely unresolved, and contributions or opinions are welcome:
 
 **Does the raw circuit produce legible behavior?** Untrained connectome output may be too erratic to read as fighting. If so, the mitigation is presentation — slower pacing, clearer visualization — not adding a trained controller.
+
+**How should looming intensity be encoded?** The circuit saturates easily: 11,224 synapses from the loom detectors deliver ~3,087 mV per volley against a 7 mV threshold, 441× over. Driving all 311 detectors at 100 Hz pins DNp01 near its refractory ceiling. The usable graded range is roughly 5–20 Hz across the full population, or 100 Hz across 2–10% of it. Which of those better represents an approaching opponent is unresolved.
 
 **How should neuromodulation be implemented?** The reference model has none. Tonic drive to octopaminergic neurons is closer to the paper's methods; scaling outgoing weights is closer to the underlying biology. See [`METHODS.md` §3.2](METHODS.md). Whichever is used will be documented as a modelling choice rather than presented as something the connectome determined.
 
