@@ -187,6 +187,12 @@ def main():
                     "-pix_fmt", "yuv420p", "-crf", "19", str(mp4)], check=True)
     print(f"\n{mp4}  ({mp4.stat().st_size/1e6:.1f} MB, {n/FPS:.1f}s)")
 
+    # frames are intermediates; the mp4 is the artifact
+    for f in frames.glob("*.png"):
+        f.unlink()
+    frames.rmdir()
+    print("cleaned up intermediate frames")
+
 
 if __name__ == "__main__":
     main()

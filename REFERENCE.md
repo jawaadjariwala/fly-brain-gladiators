@@ -162,6 +162,21 @@ Our engine should reproduce the first row. The third row is a useful sanity chec
 
 Both the reference model and the MLX reimplementation run **batch experiments** — a fixed 1000 ms trial with constant input, analysed afterwards. The arena needs **chunked simulation with membrane state carried across game ticks** (see METHODS.md §3.4). That is a different architecture, so the engine is ours; the published numbers are the ground truth.
 
+### Rendering approach
+
+The volumetric look seen in the better connectome visualisations comes from the **approach**, not the renderer: drawing *every* neuron as a dim point in 3D perspective with depth shading, so the brain reads as a solid structure with visible internal architecture, rather than drawing only the active ones. Verified in matplotlib against the full 139,662 positioned neurons.
+
+Tool options, if the current renderer stops being enough:
+
+| Tool | Purpose | Notes |
+|---|---|---|
+| **Neuroglancer** | Google's viewer; what the official site uses | Built for exploring, not for animating activity over time |
+| **navis + Octarine** | WGPU viewer purpose-built for neurons | The route to **morphology** — actual branching arbors rather than cell bodies. Needs skeleton data |
+| **Blender + neuVid** | Cinema-quality video from neuPrint descriptions | Highest quality, heaviest |
+| **pygfx / vispy** | GPU point clouds | Faster with true additive blending; a modest visual gain over matplotlib |
+
+The meaningful upgrade is morphology, not a faster point renderer.
+
 ### Visualization — already unlocked
 
 The annotations table carries `somaLocation`, a 3D coordinate per neuron:
