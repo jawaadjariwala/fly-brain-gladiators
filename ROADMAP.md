@@ -48,8 +48,13 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 ### Phase 2 — Arena
 - [ ] 2D top-down arena with deterministic physics
 - [ ] Weapon classes: murmillo, hoplomachus, thraex
-- [x] Sensory encoding — arena state to Poisson input rates *(looming channel done; see `fbg/stimulus.py`)*
-- [ ] Motor decoding — descending neuron spike rates to actions
+- [x] Sensory encoding — arena state to Poisson input rates (`fbg/stimulus.py`)
+  - Angular expansion rate sets firing rate; **retinotopic recruitment** sets how many detectors are driven, scaling with the object's angular area
+- [x] Motor decoding — descending and motor neuron rates to actions (`fbg/motor.py`)
+  - Pools defined purely by anatomical annotation: `fl`/`ml`/`hl` leg motor neurons split by side, `wm` wing, `nm` neck, DNa02 left/right for steering, DNp01 for escape, DNp09 for guard, pC1 for aggression
+  - Escape threshold anchored to biology: real flies initiate escape at roughly 20–40° angular size, and the chosen GF rate produces first escape at **31°**
+  - Escape refractory of 150 ms — a physical constraint on the body, not a tunable
+  - **Frozen.** If a fighter behaves badly the fix is its biological profile, never this file
 - [ ] Chunked simulation loop with state carried across ticks
 - [ ] Spike raster overlay
 
@@ -83,7 +88,7 @@ Genuinely unresolved, and contributions or opinions are welcome:
 
 **Is MLX worth adding?** The engine is NumPy on CPU. Roughly 67% of the work is elementwise arithmetic over every neuron each step, which a GPU parallelises — but Amdahl's law caps the total win at ~3×, realistically 2–2.5×. At the current 1.67 s/bs a full 6-fighter round-robin with 30 trials runs about 6 hours. Whether that needs fixing depends on fight duration and trial count, neither of which is settled. Deferred until Phase 3 makes the requirement concrete. If added, the NumPy engine stays as the reference implementation, since MLX is Apple-only.
 
-**How should looming intensity be encoded?** The circuit saturates easily: 11,224 synapses from the loom detectors deliver ~3,087 mV per volley against a 7 mV threshold, 441× over. Driving all 311 detectors at 100 Hz pins DNp01 near its refractory ceiling. The usable graded range is roughly 5–20 Hz across the full population, or 100 Hz across 2–10% of it. Which of those better represents an approaching opponent is unresolved.
+**~~How should looming intensity be encoded?~~ Resolved.** The circuit saturates easily — 11,224 synapses deliver ~3,087 mV per volley against a 7 mV threshold, 441× over — and driving all 311 detectors at once made a fighter that flinched permanently. The fix was retinotopic recruitment: LC4 and LPLC2 tile the visual field, so a small distant object falls on few of them and a large close one on many. Recruitment scales with angular area, which is both more biologically correct and removes the saturation. First escape now lands at 31° angular size, inside the documented 20–40° window.
 
 **How should neuromodulation be implemented?** The reference model has none. Tonic drive to octopaminergic neurons is closer to the paper's methods; scaling outgoing weights is closer to the underlying biology. See [`METHODS.md` §3.2](METHODS.md). Whichever is used will be documented as a modelling choice rather than presented as something the connectome determined.
 

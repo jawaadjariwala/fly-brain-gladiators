@@ -20,6 +20,13 @@ import numpy as np
 MIN_HZ = 1.0
 MAX_HZ = 22.0
 
+# LC4 and LPLC2 are retinotopic: they tile the visual field, so a small distant
+# object falls on few of them and a large close one on many. Driving the whole
+# population at once saturates the giant fiber (441x threshold per volley) and
+# produces a fighter that flinches permanently. Recruitment scales with the
+# object's angular AREA, and the full population is reached at FULL_FIELD_DEG.
+FULL_FIELD_DEG = 70.0
+
 
 def angular_size(radius_mm: float, distance_mm: np.ndarray) -> np.ndarray:
     """Angular size in radians of an object of `radius_mm` at `distance_mm`."""
@@ -45,6 +52,12 @@ def approach(duration_s: float, dt_s: float, *, radius_mm: float = 5.0,
     speed = (start_mm - end_mm) / max(duration_s, 1e-6)
     d = np.maximum(start_mm - speed * t, end_mm)
     return t, d, angular_size(radius_mm, d)
+
+
+def recruited_fraction(theta: np.ndarray) -> np.ndarray:
+    """Fraction of loom detectors an object of angular size `theta` falls on."""
+    frac = (np.degrees(theta) / FULL_FIELD_DEG) ** 2
+    return np.clip(frac, 0.0, 1.0)
 
 
 def expansion_to_rate(theta: np.ndarray, dt_s: float) -> np.ndarray:
