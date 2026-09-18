@@ -1,0 +1,36 @@
+# Connectome data — ~1.1 GB raw, ~205 MB matrix. NEVER commit.
+data/
+*.npz
+*.npy
+*.h5
+*.hdf5
+*.parquet
+*.feather
+connectome/
+malecns/
+
+# Rendered output
+renders/
+clips/
+*.mp4
+*.mov
+*.gif
+!docs/**/*.gif
+
+# Match results — keep summaries, not raw spike dumps
+runs/**/spikes/
+runs/**/raw/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+
+# macOS
+.DS_Store

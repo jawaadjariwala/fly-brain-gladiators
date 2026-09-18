@@ -1,0 +1,22 @@
+{
+  "name": "GEMINI-B",
+  "class": "thraex",
+  "seed": 2002,
+  "note": "Identical to GEMINI-A except the seed. If these two fight the same way, the seed isn't doing anything and the sim is too deterministic to be interesting.",
+  "modulation": {
+    "octopamine_gain": 1.0,
+    "p1_drive": 1.0,
+    "tk_gain": 1.0
+  },
+  "sensory": {
+    "loom_gain": 1.0,
+    "optic_gain": 1.0,
+    "mechano_gain": 1.0
+  },
+  "descending": {
+    "gf_threshold": 1.0,
+    "dna02_gain": 1.0,
+    "dnp09_gain": 1.0
+  },
+  "lesions": []
+}

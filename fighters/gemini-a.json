@@ -1,0 +1,22 @@
+{
+  "name": "GEMINI-A",
+  "class": "thraex",
+  "seed": 1001,
+  "note": "Baseline profile. Paired with GEMINI-B to test whether identical wiring plus different noise produces different fights.",
+  "modulation": {
+    "octopamine_gain": 1.0,
+    "p1_drive": 1.0,
+    "tk_gain": 1.0
+  },
+  "sensory": {
+    "loom_gain": 1.0,
+    "optic_gain": 1.0,
+    "mechano_gain": 1.0
+  },
+  "descending": {
+    "gf_threshold": 1.0,
+    "dna02_gain": 1.0,
+    "dnp09_gain": 1.0
+  },
+  "lesions": []
+}

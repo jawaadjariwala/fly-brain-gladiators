@@ -1,0 +1,26 @@
+{
+  "name": "NOX",
+  "class": "thraex",
+  "seed": 6203,
+  "note": "Optic lobes ablated - fights blind on mechanosensation alone. Expect erratic movement.",
+  "modulation": {
+    "octopamine_gain": 1.4,
+    "p1_drive": 1.0,
+    "tk_gain": 1.0
+  },
+  "sensory": {
+    "loom_gain": 1.0,
+    "optic_gain": 0.0,
+    "mechano_gain": 2.2
+  },
+  "descending": {
+    "gf_threshold": 1.0,
+    "dna02_gain": 1.0,
+    "dnp09_gain": 1.0
+  },
+  "lesions": [
+    "ME",
+    "LO",
+    "LOP"
+  ]
+}
