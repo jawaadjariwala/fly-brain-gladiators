@@ -65,6 +65,7 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 - [x] Animated activity film (`scripts/animate.py`) — 1080×1920 vertical, glow and depth shading. Two layouts: `--split` (default; what the fly sees above, brain and cord below) and `--full` (no stimulus panel, brain and cord fill the frame)
 - [x] Looming stimulus model (`fbg/stimulus.py`) — angular expansion rate drives loom-detector firing rate, so the visual and the simulation are causally linked rather than rendered side by side
   - The simulation advances in 4 ms slices with drive updated each slice, carrying membrane state across — the same loop the arena will use
+- [x] Rotating 3D volumetric renderer (`scripts/animate3d.py`) — all 139,662 positioned neurons drawn as a dense point cloud in perspective, one revolution per clip, activity glowing on top. The volumetric look comes from drawing every neuron dimly rather than only the active ones
 - [ ] Split-screen renderer: arena, spike raster, aggression state
 - [ ] Event log with timestamped neural and game events
 - [ ] Automated highlight clipping from the event log
