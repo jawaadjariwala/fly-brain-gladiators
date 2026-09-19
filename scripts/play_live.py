@@ -82,7 +82,7 @@ def main():
 
     pos_t, playing, speed_i = 0.0, True, 2
     show_brain, show_hud, follow = True, True, True
-    running = True
+    running, want_shot = True, False
 
     while running:
         dt = clock.tick(60) / 1000.0
@@ -107,8 +107,11 @@ def main():
                 elif ev.key == pygame.K_DOWN:
                     speed_i = max(speed_i - 1, 0)
                 elif ev.key == pygame.K_s:
-                    p = Path("renders") / f"shot_{int(time.time())}.png"
-                    pygame.image.save(scene, str(p)); print(f"saved {p}")
+                    # Request it, don't take it here: events are handled before
+                    # the frame is drawn, so saving now writes whatever the
+                    # scene held last tick — and on the first pass through the
+                    # loop that is an untouched surface, which is solid black.
+                    want_shot = True
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RIGHT]:
@@ -176,6 +179,13 @@ def main():
                     f"[space] [←→] [↑↓] [c]am [b]rain [h]ud [r]estart")
             lbl = r.f_small.render(info, True, (122, 136, 148))
             scene.blit(lbl, (W // 2 - lbl.get_width() // 2, H - 72))
+
+        if want_shot:
+            # Saved at full 1080x1920, not at window size.
+            p = Path("renders") / f"shot_{int(time.time())}.png"
+            pygame.image.save(scene, str(p))
+            print(f"saved {p}")
+            want_shot = False
 
         pygame.transform.smoothscale(scene, (WIN_W, WIN_H), screen)
         pygame.display.flip()
