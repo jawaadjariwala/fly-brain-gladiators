@@ -66,12 +66,14 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 - [ ] Round-robin tournament runner
 - [ ] Multi-trial aggregation (the input is stochastic; single matches are noise)
 
-### Phase 4 — Rendering
+### Phase 4 — Rendering *(brought forward — the debug renderer was not watchable)*
 - [x] Anatomical activity renderer (`fbg/render.py`) — every neuron drawn at its real soma position, brain above and nerve cord below
 - [x] Animated activity film (`scripts/animate.py`) — 1080×1920 vertical, glow and depth shading. Two layouts: `--split` (default; what the fly sees above, brain and cord below) and `--full` (no stimulus panel, brain and cord fill the frame)
 - [x] Looming stimulus model (`fbg/stimulus.py`) — angular expansion rate drives loom-detector firing rate, so the visual and the simulation are causally linked rather than rendered side by side
   - The simulation advances in 4 ms slices with drive updated each slice, carrying membrane state across — the same loop the arena will use
 - [x] Rotating 3D volumetric renderer (`scripts/animate3d.py`) — all 139,662 positioned neurons drawn as a dense point cloud in perspective, one revolution per clip, activity glowing on top. The volumetric look comes from drawing every neuron dimly rather than only the active ones
+- [x] Animation state machine (`fbg/arena.py`) — the brain decides every 20 ms but a body cannot change what it is doing fifty times a second. States are committed sequences (windup → strike → recover, dodge, guard hold), and rendering reads those rather than the raw per-tick decision. Cut state changes from ~1 per tick to one per 140 ms
+- [x] Game renderer (`fbg/game/`, `scripts/play_fight.py`) — procedural fly sprites with posed legs, wings and weapons; interpolated motion at 60 fps; a camera that follows the action; sand arena
 - [ ] Split-screen renderer: arena, spike raster, aggression state
 - [ ] Event log with timestamped neural and game events
 - [ ] Automated highlight clipping from the event log
@@ -96,6 +98,8 @@ Decisions this project imposes rather than reads from the connectome. Each is he
 ## Open questions
 
 Genuinely unresolved, and contributions or opinions are welcome:
+
+**Fights stall.** Around ten seconds the fighters separate and stop re-engaging: rival drive falls off with distance, so once apart neither has a reason to close. Needs a reason to seek — wider rival range, a wall-avoidance bias, or an aggression state that persists once triggered.
 
 **Does the raw circuit produce legible behavior?** Untrained connectome output may be too erratic to read as fighting. If so, the mitigation is presentation — slower pacing, clearer visualization — not adding a trained controller.
 

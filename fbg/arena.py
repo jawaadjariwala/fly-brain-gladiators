@@ -75,6 +75,17 @@ DODGE_IMPULSE = 5.5                        # mm, backwards, on an escape
 START_HEALTH = 100.0
 
 
+# Animation states. The brain decides every 20 ms, but a body cannot change
+# what it is doing ten times a second — an attack is a committed sequence, not
+# a per-tick flag. Rendering reads these, never the raw decision.
+IDLE, WALK, WINDUP, STRIKE, RECOVER, DODGE, GUARD = (
+    "idle", "walk", "windup", "strike", "recover", "dodge", "guard")
+
+DODGE_ANIM_MS = 220.0
+STRIKE_ANIM_MS = 70.0
+GUARD_HOLD_MS = 160.0     # a guard persists briefly rather than flickering
+
+
 @dataclass
 class Fighter:
     """One gladiator: a body in the arena and a brain driving it."""
@@ -94,6 +105,12 @@ class Fighter:
     health: float = START_HEALTH
     busy_ms: float = 0.0        # committed in a windup or recovery
     striking_in: float = -1.0   # ms until the strike lands, or -1
+    state: str = IDLE           # animation state, for rendering
+    state_ms: float = 0.0       # how long it has been in that state
+    dodge_ms: float = 0.0       # remaining dodge animation
+    guard_ms: float = 0.0       # remaining guard hold
+    strike_ms: float = 0.0      # remaining strike flash
+    facing_target: float = 0.0  # heading the body is easing toward
     aggression_gain: float = 1.0
     hits: int = 0
     dodges: int = 0
@@ -103,6 +120,30 @@ class Fighter:
     @property
     def alive(self) -> bool:
         return self.health > 0
+
+    def set_state(self, new: str) -> None:
+        if new != self.state:
+            self.state = new
+            self.state_ms = 0.0
+
+    def advance_state(self, moving: bool) -> None:
+        """Resolve the animation state for this tick, in priority order."""
+        self.state_ms += TICK_MS
+        for t in ("dodge_ms", "guard_ms", "strike_ms"):
+            setattr(self, t, max(0.0, getattr(self, t) - TICK_MS))
+
+        if self.dodge_ms > 0:
+            self.set_state(DODGE)
+        elif self.strike_ms > 0:
+            self.set_state(STRIKE)
+        elif self.striking_in >= 0:
+            self.set_state(WINDUP)
+        elif self.busy_ms > 0:
+            self.set_state(RECOVER)
+        elif self.guard_ms > 0:
+            self.set_state(GUARD)
+        else:
+            self.set_state(WALK if moving else IDLE)
 
 
 def _wrap(a: float) -> float:
@@ -125,8 +166,8 @@ class Frame:
     tick: int
     ax: float; ay: float; a_heading: float; a_health: float
     bx: float; by: float; b_heading: float; b_health: float
-    a_action: str = "-"
-    b_action: str = "-"
+    a_action: str = IDLE      # animation state, not the raw per-tick decision
+    b_action: str = IDLE
     a_spikes: np.ndarray = field(default_factory=lambda: np.array([], np.int32))
     b_spikes: np.ndarray = field(default_factory=lambda: np.array([], np.int32))
 
@@ -213,17 +254,14 @@ class Match:
         for me, you in ((self.a, self.b), (self.b, self.a)):
             self._apply(me, you, actions[me.name], *seen[me.name], t_ms)
 
-        def label(act):
-            if act.dodge: return "DODGE"
-            if act.attack: return "ATTACK"
-            if act.guard: return "GUARD"
-            return "-"
+        for f, act in ((self.a, actions[self.a.name]), (self.b, actions[self.b.name])):
+            f.advance_state(moving=act.advance > 0.05 and not act.guard)
 
         self.frames.append(Frame(
             self.tick,
             self.a.x, self.a.y, self.a.heading, max(self.a.health, 0.0),
             self.b.x, self.b.y, self.b.heading, max(self.b.health, 0.0),
-            label(actions[self.a.name]), label(actions[self.b.name]),
+            self.a.state, self.b.state,
             spikes.get(self.a.name, np.array([], np.int32)),
             spikes.get(self.b.name, np.array([], np.int32)),
         ))
@@ -236,6 +274,7 @@ class Match:
             f.striking_in -= TICK_MS
             if f.striking_in <= 0:
                 f.striking_in = -1.0
+                f.strike_ms = STRIKE_ANIM_MS
                 self._resolve_strike(f, other, t_ms)
 
         if f.busy_ms > 0:
@@ -246,10 +285,13 @@ class Match:
             f.x -= math.cos(f.heading) * DODGE_IMPULSE
             f.y -= math.sin(f.heading) * DODGE_IMPULSE
             f.dodges += 1
+            f.dodge_ms = DODGE_ANIM_MS
             self.events.append(Event(self.tick, t_ms, "dodge", f.name,
                                      {"dist": round(dist, 1)}))
         else:
             f.heading = _wrap(f.heading + act.turn * MAX_TURN_RAD)
+            if act.guard:
+                f.guard_ms = GUARD_HOLD_MS
             if not act.guard:
                 step = act.advance * MAX_SPEED * f.weapon.speed
                 f.x += math.cos(f.heading) * step
@@ -262,6 +304,7 @@ class Match:
                 f.busy_ms = f.weapon.windup_ms + f.weapon.recovery_ms
                 f.striking_in = f.weapon.windup_ms
                 f.attacks += 1
+                f.guard_ms = 0.0
                 self.events.append(Event(self.tick, t_ms, "attack", f.name,
                                          {"dist": round(dist, 1)}))
 
