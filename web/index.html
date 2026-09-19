@@ -34,12 +34,14 @@
     <div class="canvas-wrap">
       <canvas id="arena"></canvas>
       <div id="verdict" class="verdict" hidden></div>
-      <div id="loading" class="loading">loading the match…</div>
+      <div id="loading" class="loading" hidden>loading the match…</div>
+
     </div>
 
     <footer class="transport">
       <button id="playPause" class="icon" title="Play / pause (space)">❚❚</button>
       <button id="restart" class="icon" title="Restart (R)">⟲</button>
+      <button id="newFight" class="icon wide" title="Pick new fighters (N)">New fight</button>
       <input id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Position">
       <label class="speed">
         <span>speed</span>
@@ -64,6 +66,18 @@
     <ul class="legend" id="legend"></ul>
   </aside>
 </main>
+
+<div id="picker" class="picker">
+  <h1>Fly Brain Gladiators</h1>
+  <p class="blurb">Two gladiators, both run by the real fruit fly
+    connectome — 166,700 neurons, nothing trained. Pick a pair.</p>
+  <div class="roster" id="roster"></div>
+  <div class="picker-actions">
+    <button id="fight" class="fight" disabled>Choose two fighters</button>
+    <button id="randomPick" class="ghost">Surprise me</button>
+  </div>
+</div>
+
 <script type="module" src="js/app.js"></script>
 </body>
 </html>

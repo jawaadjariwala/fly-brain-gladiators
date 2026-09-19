@@ -87,9 +87,13 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 - [ ] Automated highlight clipping from the event log
 
 ### Phase 5 — Spectator interface
-- [ ] Match scheduling and publication
+- [x] **Match serialisation** (`fbg/export.py`) — one binary per match: a JSON header, then arrays laid out 8-byte aligned so each is a typed-array view in the browser with nothing parsed twice. Body state, animation state, per-tick firing rates, and the spikes. A 20 s draw is 0.56 MB gzipped, a 10.5 s fight 0.31 MB, and a shared neuron layout 0.15 MB once
+- [x] **Web player** (`web/`) — static, no build step, no server beyond a file host. Fixed camera, flying fighters, the dodge drawn as a jump arc, playback at 0.5× by default so committed 60–110 ms attacks register. A full frame measures 1.6 ms
+- [x] **Neural panel** — both connectomes at real soma positions, brain and cord each fitted to its own proportions, with a rate per population labelled by what it drives
+- [x] **Fighter picker** — any two fighters, a random seed from the library built for that pair
+- [ ] Publish it
 - [ ] Prediction interface (virtual points, no cash value)
-- [ ] Replay viewer and result archive
+- [ ] Result archive across the library
 
 ## Modelling choices
 

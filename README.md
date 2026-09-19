@@ -77,6 +77,27 @@ Murmillo versus hoplomachus was a standard historical pairing — sword-and-heav
 
 ---
 
+## Watch it in a browser
+
+The player is a static site in [`web/`](web/). It reads recorded matches — it
+never simulates anything, so it starts in the time it takes to fetch about
+400 kB and holds frame rate with room to spare.
+
+```bash
+PYTHONPATH=. python scripts/export_matches.py --seeds 6   # build the library
+cd web && python -m http.server 8765                      # then open :8765
+```
+
+Pick any two fighters and it plays a random one of the seeds built for that
+pair. The arena is on the left with a fixed camera; on the right both fighters'
+brains and nerve cords are drawn with every neuron at its real soma position,
+with a firing rate per population underneath labelled by what that circuit
+drives.
+
+Matches are built ahead of time because simulating one costs about twice real
+time and needs the whole connectome resident, which is not something to do per
+visitor.
+
 ## Running it
 
 Every match is deterministic given its seed, so any result here can be re-run and verified.

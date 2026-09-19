@@ -18,6 +18,8 @@ const els = {
   loading: $('#loading'), verdict: $('#verdict'), clock: $('.clock'),
   seed: $('.seedline'), scrub: $('#scrub'), play: $('#playPause'),
   restart: $('#restart'), speed: $('#speed'),
+  picker: $('#picker'), roster: $('#roster'), fight: $('#fight'),
+  random: $('#randomPick'), newFight: $('#newFight'),
 };
 
 const state = { match: null, t: 0, playing: true, speed: 0.5, last: 0 };
@@ -191,6 +193,7 @@ addEventListener('keydown', e => {
   if (e.target.matches('input, select, button')) return;
   if (e.code === 'Space') { e.preventDefault(); setPlaying(!state.playing); }
   if (e.key === 'r' || e.key === 'R') { state.t = 0; setPlaying(true); }
+  if (e.key === 'n' || e.key === 'N') showPicker();
   if (!state.match) return;
   const step = state.match.tick_ms / 1000;
   if (e.key === 'ArrowRight') { state.t = Math.min(state.match.durationS, state.t + step); render(); }
@@ -212,10 +215,96 @@ window.__fbg = {
 
 requestAnimationFrame(now => { state.last = now; frame(now); });
 
-// Until the picker exists, open whatever the library lists first.
+// --- picking a fight ----------------------------------------------------
+// The library is built ahead of time, so "a random seed" means a random one of
+// the seeds built for that pair. Simulating a fresh one costs about twice real
+// time and needs the whole connectome resident, which is not something to do
+// per visitor.
+const library = { fighters: [], byPair: new Map() };
+let picked = [];
+
+const pairKey = (a, b) => [a, b].sort().join('|');
+
+function buildRoster() {
+  els.roster.textContent = '';
+  for (const f of library.fighters) {
+    const card = document.createElement('button');
+    card.className = 'card';
+    card.type = 'button';
+    card.innerHTML = `<span class="n"></span><span class="c"></span>
+                      <span class="note"></span>`;
+    card.querySelector('.n').textContent = f.name;
+    card.querySelector('.c').textContent = f.class;
+    card.querySelector('.note').textContent = f.note ?? '';
+    card.addEventListener('click', () => togglePick(f.name));
+    els.roster.append(card);
+  }
+  syncRoster();
+}
+
+function togglePick(name) {
+  const at = picked.indexOf(name);
+  if (at >= 0) picked.splice(at, 1);
+  else if (picked.length < 2) picked.push(name);
+  else picked = [picked[1], name];
+  syncRoster();
+}
+
+function syncRoster() {
+  [...els.roster.children].forEach((card, i) => {
+    const name = library.fighters[i].name;
+    const at = picked.indexOf(name);
+    if (at >= 0) card.dataset.pick = String(at);
+    else delete card.dataset.pick;
+    const wouldPair = picked.length === 1 && picked[0] !== name
+      && !library.byPair.has(pairKey(picked[0], name));
+    card.disabled = wouldPair;
+  });
+  const ready = picked.length === 2 && library.byPair.has(pairKey(...picked));
+  els.fight.disabled = !ready;
+  els.fight.textContent = ready ? `${picked[0]} vs ${picked[1]}`
+    : picked.length === 2 ? 'No match built for that pair'
+    : 'Choose two fighters';
+}
+
+function startFight(names) {
+  const options = library.byPair.get(pairKey(...names)) ?? [];
+  if (!options.length) return;
+  const choice = options[Math.floor(Math.random() * options.length)];
+  els.picker.hidden = true;
+  open(`data/${choice.slug}.fbg`);
+}
+
+function showPicker() {
+  setPlaying(false);
+  els.picker.hidden = false;
+  els.verdict.hidden = true;
+}
+
+els.fight.addEventListener('click', () => startFight(picked));
+els.random.addEventListener('click', () => {
+  const pairs = [...library.byPair.values()];
+  const any = pairs[Math.floor(Math.random() * pairs.length)][0];
+  picked = [any.a, any.b];
+  syncRoster();
+  startFight(picked);
+});
+els.newFight.addEventListener('click', showPicker);
+
 loadIndex()
-  .then(ix => open(`data/${ix.matches[0].slug}.fbg`))
+  .then(ix => {
+    library.fighters = ix.fighters;
+    for (const m of ix.matches) {
+      const k = pairKey(m.a, m.b);
+      if (!library.byPair.has(k)) library.byPair.set(k, []);
+      library.byPair.get(k).push(m);
+    }
+    buildRoster();
+    els.picker.hidden = false;
+  })
   .catch(err => {
+    els.picker.hidden = true;
+    els.loading.hidden = false;
     els.loading.textContent =
       `no match library — run scripts/export_matches.py (${err.message})`;
   });
