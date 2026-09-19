@@ -8,10 +8,13 @@ built ahead of time and the player just reads them.
 File layout — one binary, little-endian throughout:
 
     u32          length of the JSON header, in bytes
-    utf-8        JSON header (fighters, weapons, seed, result, array offsets)
-    arrays       back to back, in the order the header lists them
+    utf-8        JSON header (fighters, weapons, seed, result, array offsets),
+                 space-padded so the arrays begin on an 8-byte boundary
+    arrays       in the order the header lists them, each 8-byte aligned
 
 Every array is a typed-array view in the browser, so nothing is parsed twice.
+That is why the padding matters: a Float32Array view has to start on a
+multiple of four, and a header is whatever length it happens to be.
 `layout` is written once and shared by every match: it is the neuron positions,
 which do not change between fights.
 """
@@ -60,8 +63,32 @@ SPIKE_STRIDE = 6
 SPIKE_ENCODING = "unique-sorted-delta-u16"
 
 
+ALIGN = 8
+
+
 def _u32(n: int) -> bytes:
     return struct.pack("<I", n)
+
+
+def _pack(arrays: list[tuple[str, np.ndarray]], header: dict) -> bytes:
+    """Lay the arrays out 8-byte aligned and return the whole file."""
+    off = 0
+    header["arrays"] = []
+    for name, arr in arrays:
+        off = -(-off // ALIGN) * ALIGN
+        header["arrays"].append({"name": name, "dtype": arr.dtype.str,
+                                 "shape": list(arr.shape), "offset": off,
+                                 "bytes": int(arr.nbytes)})
+        off += arr.nbytes
+
+    blob = json.dumps(header, separators=(",", ":")).encode("utf-8")
+    blob += b" " * (-(4 + len(blob)) % ALIGN)   # JSON ignores trailing space
+    out = bytearray(_u32(len(blob)) + blob)
+    start = len(out)
+    for (_, arr), meta in zip(arrays, header["arrays"]):
+        out.extend(b"\0" * (start + meta["offset"] - len(out)))
+        out.extend(arr.tobytes())
+    return bytes(out)
 
 
 def write_match(match: Match, path: Path, *, pools_a, pools_b, n_neurons: int,
@@ -116,22 +143,9 @@ def write_match(match: Match, path: Path, *, pools_a, pools_b, n_neurons: int,
         "result": result,
         "events": [{"tick": e.tick, "kind": e.kind, "who": e.who, **e.detail}
                    for e in match.events],
-        "arrays": [],
     }
-    off = 0
-    for name, arr in arrays:
-        header["arrays"].append({"name": name, "dtype": arr.dtype.str,
-                                 "shape": list(arr.shape), "offset": off,
-                                 "bytes": arr.nbytes})
-        off += arr.nbytes
-
-    blob = json.dumps(header, separators=(",", ":")).encode("utf-8")
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("wb") as fh:
-        fh.write(_u32(len(blob)))
-        fh.write(blob)
-        for _, arr in arrays:
-            fh.write(arr.tobytes())
+    path.write_bytes(_pack(arrays, header))
     return header
 
 
@@ -168,18 +182,7 @@ def write_layout(path: Path, positions: np.ndarray, known: np.ndarray,
               ("group", groups.astype(np.uint8))]
     header = {"format": "fbg-layout/1", "n_neurons": int(len(x)),
               "parts": ["brain", "cord", "unplaced"], "spans": spans,
-              "groups": group_names, "arrays": []}
-    off = 0
-    for name, arr in arrays:
-        header["arrays"].append({"name": name, "dtype": arr.dtype.str,
-                                 "shape": list(arr.shape), "offset": off,
-                                 "bytes": arr.nbytes})
-        off += arr.nbytes
-    blob = json.dumps(header, separators=(",", ":")).encode("utf-8")
+              "groups": group_names}
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("wb") as fh:
-        fh.write(_u32(len(blob)))
-        fh.write(blob)
-        for _, arr in arrays:
-            fh.write(arr.tobytes())
+    path.write_bytes(_pack(arrays, header))
     return header

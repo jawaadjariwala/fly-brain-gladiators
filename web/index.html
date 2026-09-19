@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fly Brain Gladiators</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="stage">
+  <section class="arena-pane">
+    <header class="scoreline">
+      <div class="fighter" data-side="0">
+        <span class="name"></span>
+        <span class="class"></span>
+        <div class="bar"><i></i></div>
+        <span class="hp"></span>
+      </div>
+      <div class="versus">
+        <span class="clock">0.00s</span>
+        <span class="seedline"></span>
+      </div>
+      <div class="fighter right" data-side="1">
+        <span class="name"></span>
+        <span class="class"></span>
+        <div class="bar"><i></i></div>
+        <span class="hp"></span>
+      </div>
+    </header>
+
+    <div class="canvas-wrap">
+      <canvas id="arena"></canvas>
+      <div id="verdict" class="verdict" hidden></div>
+      <div id="loading" class="loading">loading the match…</div>
+    </div>
+
+    <footer class="transport">
+      <button id="playPause" class="icon" title="Play / pause (space)">❚❚</button>
+      <button id="restart" class="icon" title="Restart (R)">⟲</button>
+      <input id="scrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Position">
+      <label class="speed">
+        <span>speed</span>
+        <select id="speed">
+          <option value="0.25">0.25×</option>
+          <option value="0.5" selected>0.5×</option>
+          <option value="0.75">0.75×</option>
+          <option value="1">1×</option>
+        </select>
+      </label>
+    </footer>
+  </section>
+
+  <aside class="brain-pane">
+    <h2>Brain activity</h2>
+    <p class="pending">The neural panel arrives next — this is where the two
+      connectomes and their spike meters go.</p>
+  </aside>
+</main>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
