@@ -10,14 +10,123 @@
 
 const TAU = Math.PI * 2;
 
-// Blade length and shield size are the historical loadouts in miniature: the
-// murmillo carries a short sword behind a big scutum, the hoplomachus a long
-// spear behind a small round one, the thraex a curved sica in between.
+// The historical loadouts in miniature. These are three different weapons, not
+// one shape at three lengths:
+//
+//   murmillo     gladius, a short straight sword, behind a scutum — the big
+//                rectangular body shield
+//   hoplomachus  hasta, a long thrusting spear with a leaf-shaped head, behind
+//                a parmula, the small round shield
+//   thraex       sica, the short forward-curving blade that could reach around
+//                an opponent's guard, behind a small square parmula
+//
+// Sizes are in millimetres in the fly's own frame, so a gladius is about half
+// a body length.
 const WEAPON = {
-  murmillo:    { reach: 2.2, blade: 1.15, wide: 0.19, shield: 1.15 },
-  hoplomachus: { reach: 3.8, blade: 2.10, wide: 0.11, shield: 0.66 },
-  thraex:      { reach: 2.6, blade: 1.40, wide: 0.15, shield: 0.78 },
+  murmillo:    { arm: 'gladius', shield: 'scutum',  reach: 2.2 },
+  hoplomachus: { arm: 'hasta',   shield: 'round',   reach: 3.8 },
+  thraex:      { arm: 'sica',    shield: 'square',  reach: 2.6 },
 };
+
+const STEEL = '#cdd6e0';
+const STEEL_HI = '#f0f5fa';
+const STEEL_DK = '#8892a0';
+const BRONZE = '#b5904e';
+const BRONZE_DK = '#7a5f33';
+const WOOD = '#6b4f35';
+const LEATHER = '#45301f';
+const IRON = '#2b3038';
+
+function hilt(ctx, { pommel = 0.11, grip = 0.30, guard = 0.34 }) {
+  ctx.fillStyle = BRONZE_DK;
+  ctx.beginPath(); ctx.arc(-grip - 0.06, 0, pommel, 0, TAU); ctx.fill();
+  ctx.fillStyle = LEATHER;
+  ctx.fillRect(-grip, -0.085, grip, 0.17);
+  ctx.fillStyle = BRONZE;
+  ctx.fillRect(-0.02, -guard / 2, 0.11, guard);
+}
+
+function drawGladius(ctx, lit) {
+  hilt(ctx, { grip: 0.30, guard: 0.36 });
+  const len = 1.18, w = 0.105;
+  ctx.beginPath();
+  ctx.moveTo(0.09, -w);
+  ctx.lineTo(0.09 + len * 0.72, -w);
+  ctx.lineTo(0.09 + len, 0);              // point
+  ctx.lineTo(0.09 + len * 0.72, w);
+  ctx.lineTo(0.09, w);
+  ctx.closePath();
+  ctx.fillStyle = lit ? STEEL_HI : STEEL;
+  ctx.fill();
+  ctx.strokeStyle = IRON; ctx.lineWidth = 0.045; ctx.stroke();
+  ctx.beginPath();                         // fuller down the centre
+  ctx.moveTo(0.16, 0); ctx.lineTo(0.09 + len * 0.78, 0);
+  ctx.strokeStyle = STEEL_DK; ctx.lineWidth = 0.05; ctx.stroke();
+}
+
+function drawHasta(ctx, lit) {
+  ctx.fillStyle = BRONZE_DK;               // butt cap
+  ctx.fillRect(-0.42, -0.06, 0.12, 0.12);
+  ctx.fillStyle = WOOD;                    // shaft
+  ctx.fillRect(-0.32, -0.045, 2.02, 0.09);
+  ctx.fillStyle = BRONZE;                  // socket
+  ctx.fillRect(1.64, -0.07, 0.14, 0.14);
+  ctx.beginPath();                         // leaf-shaped head
+  ctx.moveTo(1.76, 0);
+  ctx.quadraticCurveTo(1.92, -0.135, 2.34, 0);
+  ctx.quadraticCurveTo(1.92, 0.135, 1.76, 0);
+  ctx.closePath();
+  ctx.fillStyle = lit ? STEEL_HI : STEEL;
+  ctx.fill();
+  ctx.strokeStyle = IRON; ctx.lineWidth = 0.04; ctx.stroke();
+}
+
+function drawSica(ctx, lit) {
+  hilt(ctx, { grip: 0.26, guard: 0.28 });
+  ctx.beginPath();                         // forward-curving blade
+  ctx.moveTo(0.08, -0.085);
+  ctx.quadraticCurveTo(0.78, -0.42, 1.30, -0.52);   // spine
+  ctx.quadraticCurveTo(1.16, -0.30, 0.90, -0.14);   // tip back along the edge
+  ctx.quadraticCurveTo(0.55, 0.03, 0.08, 0.085);
+  ctx.closePath();
+  ctx.fillStyle = lit ? STEEL_HI : STEEL;
+  ctx.fill();
+  ctx.strokeStyle = IRON; ctx.lineWidth = 0.045; ctx.stroke();
+}
+
+const ARMS = { gladius: drawGladius, hasta: drawHasta, sica: drawSica };
+
+// Shields are painted in the fighter's colour with a bronze rim and boss —
+// which is both what a gladiator's shield looked like and the quickest way to
+// tell the two of them apart on a dark floor.
+function drawShield(ctx, kind, face, raised) {
+  const rim = raised ? '#e8d6a8' : BRONZE;
+  ctx.strokeStyle = rim;
+  ctx.lineWidth = 0.09;
+  ctx.fillStyle = face;
+  if (kind === 'scutum') {
+    // Seen from above, a body shield is long front-to-back, not across: it
+    // covers the bearer along their own length.
+    const w = 1.30, h = 0.60, r = 0.15;
+    ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, r);
+    ctx.fill(); ctx.stroke();
+    ctx.beginPath();                      // spina, running along the shield
+    ctx.moveTo(-w / 2 + 0.1, 0); ctx.lineTo(w / 2 - 0.1, 0);
+    ctx.strokeStyle = BRONZE_DK; ctx.lineWidth = 0.07; ctx.stroke();
+  } else if (kind === 'square') {
+    const w = 0.84, h = 0.70;
+    ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, 0.1);
+    ctx.fill(); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.arc(0, 0, 0.48, 0, TAU);
+    ctx.fill(); ctx.stroke();
+  }
+  ctx.beginPath();                        // umbo, the central boss
+  ctx.arc(0, 0, 0.17, 0, TAU);
+  ctx.fillStyle = rim; ctx.fill();
+  ctx.beginPath(); ctx.arc(-0.04, -0.04, 0.07, 0, TAU);
+  ctx.fillStyle = 'rgba(255,248,224,0.6)'; ctx.fill();
+}
 
 const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 const shade = (c, k) => [Math.round(c[0] * k), Math.round(c[1] * k), Math.round(c[2] * k)];
@@ -137,43 +246,25 @@ export function drawFly(ctx, { x, y, heading, mm, tint, state, ms, weapon,
     }
   }
 
-  // --- shield on the left arm. Bronze rather than the fighter's colour, with
-  // a rim and a boss, so it reads as carried equipment and not as part of the
-  // animal; it only takes the tint when it is actually raised to guard.
-  const sr = w.shield * (guarding ? 0.60 : 0.46);
+  // --- shield on the left arm, weapon in the right
+  // Carried out on the arm, clear of the head. Raising it to guard swings it
+  // forward and across, which is what it is for.
   ctx.save();
-  ctx.translate(guarding ? 0.95 : 0.40, -(guarding ? 0.42 : 0.74));
-  ctx.rotate(guarding ? -0.55 : -0.12);
-  ctx.beginPath();
-  ctx.ellipse(0, 0, sr * 0.55, sr, 0, 0, TAU);
-  ctx.fillStyle = guarding ? rgba(shade(tint, 1.1), 1) : '#7a6340';
-  ctx.fill();
-  ctx.strokeStyle = guarding ? rgba(tint, 1) : '#4a3c26';
-  ctx.lineWidth = 0.1;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.ellipse(0, 0, sr * 0.2, sr * 0.34, 0, 0, TAU);
-  ctx.fillStyle = 'rgba(232,214,168,0.55)';
-  ctx.fill();
+  if (guarding) {
+    ctx.translate(0.95, -0.34);
+    ctx.rotate(-0.42);
+    ctx.scale(1.1, 1.1);
+  } else {
+    ctx.translate(0.14, -0.84);
+    ctx.rotate(-0.06);
+  }
+  drawShield(ctx, w.shield, rgba(shade(tint, guarding ? 1.0 : 0.72), 1), guarding);
   ctx.restore();
 
   ctx.save();
-  ctx.translate(0.34 + thrust * 0.9, 0.62 - thrust * 0.28);
-  ctx.rotate(-0.30 - thrust * 0.22);
-  ctx.fillStyle = rgba(dark, 1);
-  ctx.fillRect(-0.2, -0.09, 0.46, 0.18);          // grip
-  ctx.beginPath();                                 // blade
-  ctx.moveTo(0.26, -w.wide);
-  ctx.lineTo(0.26 + w.blade * 0.78, -w.wide * 0.6);
-  ctx.lineTo(0.26 + w.blade, 0);
-  ctx.lineTo(0.26 + w.blade * 0.78, w.wide * 0.6);
-  ctx.lineTo(0.26, w.wide);
-  ctx.closePath();
-  ctx.fillStyle = state === 'strike' ? '#fff6dc' : '#c8d2dc';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(12,14,18,0.8)';
-  ctx.lineWidth = 0.055;
-  ctx.stroke();
+  ctx.translate(0.34 + thrust * 0.85, 0.74 - thrust * 0.34);
+  ctx.rotate(-0.24 - thrust * 0.28);
+  (ARMS[w.arm] ?? drawGladius)(ctx, state === 'strike');
   ctx.restore();
 
   if (flash > 0) {

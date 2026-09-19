@@ -57,10 +57,23 @@ def neuron_groups(c, sub, index_map) -> np.ndarray:
     return g
 
 
+def _reread(path: Path, a_name: str, b_name: str, seed: int) -> dict:
+    """Index entry for a match already on disk, read from its own header."""
+    blob = path.read_bytes()
+    n = int.from_bytes(blob[:4], "little")
+    head = json.loads(blob[4:4 + n])
+    return {"slug": path.stem, "a": a_name, "b": b_name, "seed": seed,
+            "ticks": head["ticks"], "winner": head["result"]["winner"],
+            "duration_s": head["result"]["duration_s"],
+            "bytes": path.stat().st_size}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=3, help="seeds per matchup")
     ap.add_argument("--pair", nargs=2, metavar=("A", "B"))
+    ap.add_argument("--rebuild", action="store_true",
+                    help="re-simulate matches already on disk")
     # Fights are watched in slow motion, so 20 s of simulated time is already a
     # long watch, and capping it bounds the file size.
     ap.add_argument("--max-s", type=float, default=20.0)
@@ -88,6 +101,15 @@ def main() -> None:
     index, total = [], 0
     for a_name, b_name in pairs:
         for seed in range(1, args.seeds + 1):
+            slug = f"{a_name.lower()}__{b_name.lower()}__s{seed}"
+            path = OUT / f"{slug}.fbg"
+            if path.exists() and not args.rebuild:
+                # A match is a recording of the simulation, not of how it is
+                # drawn, so changing the art does not invalidate one.
+                index.append(_reread(path, a_name, b_name, seed))
+                total += path.stat().st_size
+                print(f"  {slug:<34} cached")
+                continue
             t0 = time.perf_counter()
             fighters = [build_fighter(profiles[n], c, sub, im, seeds_idx, eyes)
                         for n in (a_name, b_name)]
@@ -95,8 +117,6 @@ def main() -> None:
             m.record_spikes = True
             m.record_meters = True
             result = m.run()
-            slug = f"{a_name.lower()}__{b_name.lower()}__s{seed}"
-            path = OUT / f"{slug}.fbg"
             write_match(m, path, pools_a=fighters[0].pools, pools_b=fighters[1].pools,
                         n_neurons=sub.n_neurons, result=result)
             size = path.stat().st_size
