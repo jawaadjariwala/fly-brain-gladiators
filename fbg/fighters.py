@@ -23,6 +23,7 @@ from fbg.connectome import Connectome
 from fbg.data import SOURCES
 from fbg.lif import Network, Params
 from fbg.motor import Decoder, build_pools
+from fbg.stimulus import Eyes, visual_pools   # re-exported for callers
 from fbg import motor
 
 PROFILE_DIR = Path(__file__).resolve().parent.parent / "fighters"
@@ -81,8 +82,7 @@ def _superclass_indices(c: Connectome, superclass: str, index_map) -> np.ndarray
 
 
 def build_fighter(profile: Profile, full: Connectome, sub: Connectome,
-                  index_map: dict, seeds, loom_left: np.ndarray,
-                  loom_right: np.ndarray) -> Fighter:
+                  index_map: dict, seeds, eyes: Eyes) -> Fighter:
     """Apply a profile's biological knobs to a copy of the subgraph."""
     graph = copy.copy(sub)
     m = sparse.csr_matrix(sub.matrix.copy())
@@ -114,9 +114,21 @@ def build_fighter(profile: Profile, full: Connectome, sub: Connectome,
     net = Network(graph, Params(), seed=profile.seed)
     net.reset()
 
-    # baseline locomotor drive — flies walk spontaneously
-    dn_idx = np.array([index_map[i] for i in seeds.descending
-                       if i in index_map], dtype=np.int32)
+    # Baseline locomotor drive — flies walk spontaneously, and without a
+    # standing descending tone the fighters never move at all.
+    #
+    # It deliberately skips the four command populations the decoder reads.
+    # Driving DNa02 as a Poisson source means the steering readout is measuring
+    # the drive rather than the circuit, which shows up as a standing turn bias
+    # (measured: 13.8 Hz left against 7.2 Hz right with nothing in view, a
+    # 51 degree drift over five seconds); doing it to DNp01 hands the escape
+    # reflex spikes it never earned. Those neurons fire when the network
+    # drives them, which is the whole point of reading them.
+    readout = np.concatenate([pools.dna02_left, pools.dna02_right,
+                              pools.giant_fiber, pools.dnp09])
+    dn_idx = np.array(sorted({index_map[i] for i in seeds.descending
+                              if i in index_map} - set(readout.tolist())),
+                      dtype=np.int32)
     net.add_tonic("locomotor", dn_idx, arena.BASELINE_LOCOMOTOR_HZ)
 
     # octopamine: tonic drive to the octopaminergic population (METHODS 3.2,
@@ -133,8 +145,7 @@ def build_fighter(profile: Profile, full: Connectome, sub: Connectome,
 
     return Fighter(
         name=profile.name, weapon=WEAPONS[profile.weapon_class], net=net,
-        pools=pools, decoder=dec,
-        loom_left=loom_left, loom_right=loom_right,
+        pools=pools, decoder=dec, eyes=eyes,
         rng=np.random.default_rng(profile.seed + 1),
         aggression_gain=profile.p1_drive * profile.tk_gain,
     )

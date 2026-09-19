@@ -56,7 +56,8 @@ def main():
           f"{100*sub.n_edges/c.n_edges:.1f}% of edges)")
     print(f"\nseeds retained: " + ", ".join(
         f"{k} {len(to_sub(getattr(s_full, k)))}/{len(getattr(s_full, k))}"
-        for k in ("loom", "aggression", "octopaminergic", "descending", "motor")))
+        for k in ("loom", "tracking", "aggression", "octopaminergic",
+                  "descending", "motor")))
 
     results = {}
     for label, cc, stim, ro in [("full", c, s_full.loom, readouts_full),

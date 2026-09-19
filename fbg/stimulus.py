@@ -1,4 +1,11 @@
-"""Looming stimulus — an object approaching on a collision course.
+"""Visual input: what a fighter's eyes deliver to its optic lobes.
+
+Two channels, because the fly has two that matter here. Looming detectors
+(LC4, LPLC2, LC6) fire when an object expands towards the animal, and drive
+escape. Target trackers (LC10a) follow a small moving object and drive
+pursuit — they are what a male uses to steer after another fly.
+
+Looming stimulus — an object approaching on a collision course.
 
 The fly's loom detectors (LC4, LPLC2) respond to angular expansion, not to
 distance. An object of radius r at distance d subtends
@@ -15,7 +22,15 @@ so the usable graded band is roughly 2-20 Hz.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
+import pyarrow.compute as pc
+import pyarrow.feather as feather
+
+from fbg.connectome import Connectome
+from fbg.data import SOURCES
+from fbg.subgraph import LOOM_TYPES, TRACKING_TYPES
 
 MIN_HZ = 1.0
 MAX_HZ = 22.0
@@ -66,3 +81,59 @@ def expansion_to_rate(theta: np.ndarray, dt_s: float) -> np.ndarray:
     # normalise against this trajectory's peak so the band is used fully
     peak = np.max(dtheta) if np.max(dtheta) > 0 else 1.0
     return MIN_HZ + (MAX_HZ - MIN_HZ) * np.clip(dtheta / peak, 0.0, 1.0)
+
+
+# --- target tracking --------------------------------------------------------
+# LC10a units have small receptive fields — the population is tuned to a small
+# moving object, not to a whole-field expansion. So a fly-sized target fills a
+# useful fraction of the tuned population from much further away than it fills
+# the looming detectors, and TRACK_FIELD_DEG is correspondingly small.
+TRACK_FIELD_DEG = 12.0
+TRACK_HZ = 20.0
+# A fly's compound eyes cover roughly 270-300 degrees horizontally, leaving a
+# blind wedge directly behind it. A target inside that wedge is not seen at
+# all — which is why overshooting a turn is expensive.
+REAR_BLIND_DEG = 80.0
+
+
+@dataclass(frozen=True)
+class Eyes:
+    """Visual input pools, split by eye and by channel."""
+
+    loom_left: np.ndarray
+    loom_right: np.ndarray
+    track_left: np.ndarray
+    track_right: np.ndarray
+
+    def summary(self) -> str:
+        return (f"loom {len(self.loom_left)}/{len(self.loom_right)}  "
+                f"track {len(self.track_left)}/{len(self.track_right)}  (L/R)")
+
+
+def visual_pools(c: Connectome, index_map: dict | None = None) -> Eyes:
+    """Look up the visual input pools by cell type and soma side."""
+    t = feather.read_table(
+        SOURCES["annotations"].path,
+        columns=["bodyId", "type", "superclass", "somaSide"], memory_map=True)
+    ann = t.filter(pc.is_valid(t.column("superclass"))).to_pandas()
+
+    def pool(types, side) -> np.ndarray:
+        m = ann["type"].isin(types) & (ann["somaSide"] == side)
+        out = {c.index_of[int(b)] for b in ann.loc[m, "bodyId"] if int(b) in c.index_of}
+        if index_map is not None:
+            out = {index_map[i] for i in out if i in index_map}
+        return np.array(sorted(out), dtype=np.int32)
+
+    return Eyes(pool(LOOM_TYPES, "L"), pool(LOOM_TYPES, "R"),
+                pool(TRACKING_TYPES, "L"), pool(TRACKING_TYPES, "R"))
+
+
+def eye_weights(bearing: float) -> tuple[float, float]:
+    """Split a target at `bearing` between the two eyes.
+
+    Positive bearing is to the animal's left. The eyes overlap frontally, so a
+    target dead ahead reaches both; one directly to a side reaches almost only
+    that side.
+    """
+    left = float(np.clip(0.5 + 0.5 * np.sin(bearing), 0.05, 0.95))
+    return left, 1.0 - left

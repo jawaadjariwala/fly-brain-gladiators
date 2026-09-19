@@ -46,6 +46,7 @@ All of these are annotated in the dataset and documented in the *Drosophila* lit
 | **LC4** | Lobula columnar neuron. Responds to **looming** — objects approaching on a collision course | Detecting an incoming attack |
 | **LPLC2** | Also loom-sensitive, tuned to outward-expanding motion | Same — pair with LC4 |
 | **LC6** | Another looming-responsive LC type | Optional third loom channel |
+| **LC10a** | Tracks a small moving object — the channel a male uses to follow another fly | Steering towards an opponent. The loom types have no direct path to DNa02, so without this there is no visual input to steering at all |
 | **Optic lobe columns** | Retinotopic — each column maps a direction in the visual field | Opponent bearing. Lesion these to make a blind fighter |
 | **Johnston's organ / antennal mechanosensors** | Wind and vibration sensing | Wall contact, opponent proximity when blind |
 
@@ -61,7 +62,7 @@ All of these are annotated in the dataset and documented in the *Drosophila* lit
 
 | Cell type | Real function | Used for |
 |---|---|---|
-| **DNa02** | Steering — drives turning; left/right activity asymmetry sets direction | Turn left / right |
+| **DNa02** | Steering — drives an **ipsilateral** turn, so left/right activity asymmetry sets direction. One neuron per side | Turn left / right |
 | **DNp09** | Drives stopping and freezing | Guard stance / raise shield |
 | **DNp01 (giant fiber)** | The escape command neuron. Loom input → giant fiber spike → escape jump | **The dodge.** The best mechanic in the project |
 

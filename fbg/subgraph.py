@@ -7,7 +7,8 @@ of them costs time and changes nothing downstream.
 The subgraph keeps the circuits we stimulate or read out, plus the neurons that
 carry signal between them:
 
-    seeds  = loom detectors + aggression circuits + descending neurons + motor
+    seeds  = loom detectors + target trackers + aggression circuits
+             + descending neurons + motor
     bridge = neurons reachable forward from a seed AND backward to a seed,
              within `hops`, following edges above `min_synapses`
 
@@ -32,6 +33,11 @@ from fbg.data import SOURCES
 
 # cell types and populations the arena stimulates or reads
 LOOM_TYPES = ["LC4", "LPLC2", "LC6"]
+# LC10a is the male target-tracking channel: it responds to small moving
+# objects rather than to collisions, and it is the pathway a fly uses to steer
+# after another fly. Without it there is no visual input to the steering
+# neurons at all — LC4 and LPLC2 have zero direct edges onto DNa02.
+TRACKING_TYPES = ["LC10a"]
 AGGRESSION_TYPE_PREFIX = "pC1"          # P1 is a subset of pC1 in this nomenclature
 READOUT_TYPES = ["DNp01", "DNa02", "DNp09"]
 
@@ -53,6 +59,7 @@ def _octopaminergic(valid_bodies: set[int]) -> np.ndarray:
 @dataclass
 class Seeds:
     loom: np.ndarray
+    tracking: np.ndarray
     aggression: np.ndarray
     octopaminergic: np.ndarray
     descending: np.ndarray
@@ -60,8 +67,9 @@ class Seeds:
 
     @property
     def all(self) -> np.ndarray:
-        return np.unique(np.concatenate([self.loom, self.aggression,
-                                         self.octopaminergic, self.descending, self.motor]))
+        return np.unique(np.concatenate([
+            self.loom, self.tracking, self.aggression,
+            self.octopaminergic, self.descending, self.motor]))
 
 
 def seed_indices(c: Connectome) -> Seeds:
@@ -74,6 +82,7 @@ def seed_indices(c: Connectome) -> Seeds:
 
     return Seeds(
         loom=to_idx(ann.loc[ann["type"].isin(LOOM_TYPES), "bodyId"]),
+        tracking=to_idx(ann.loc[ann["type"].isin(TRACKING_TYPES), "bodyId"]),
         aggression=to_idx(ann.loc[ann["type"].fillna("").str.startswith(AGGRESSION_TYPE_PREFIX),
                                   "bodyId"]),
         octopaminergic=to_idx(_octopaminergic(valid)),
@@ -125,7 +134,8 @@ if __name__ == "__main__":
     c = build()
     s = seed_indices(c)
     print(f"seeds:")
-    for name in ("loom", "aggression", "octopaminergic", "descending", "motor"):
+    for name in ("loom", "tracking", "aggression", "octopaminergic",
+                 "descending", "motor"):
         print(f"  {name:<16} {len(getattr(s, name)):>6,}")
     print(f"  {'total unique':<16} {len(s.all):>6,}\n")
     for hops in (1, 2, 3):

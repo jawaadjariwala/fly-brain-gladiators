@@ -50,12 +50,17 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 - [x] Weapon classes: murmillo, hoplomachus, thraex — reach, windup, recovery, block arc and mobility from the historical loadouts
 - [x] Sensory encoding — arena state to Poisson input rates (`fbg/stimulus.py`)
   - Angular expansion rate sets firing rate; **retinotopic recruitment** sets how many detectors are driven, scaling with the object's angular area
+  - **Two visual channels.** LC4/LPLC2/LC6 for looming, driving escape; **LC10a** for small-target tracking, driving pursuit. LC4 and LPLC2 have *zero* direct edges onto DNa02, so with only a looming channel there is no visual input to the steering neurons at all
+  - **Corollary discharge.** Expansion is measured from where the fighter is now against where the opponent *was*, so a fighter's own approach generates no looming signal. Without it every advance triggers the fighter's own escape reflex
+  - Rear blind arc of 80°, matching the fly's roughly 270–300° horizontal field
 - [x] Motor decoding — descending and motor neuron rates to actions (`fbg/motor.py`)
   - Pools defined purely by anatomical annotation: `fl`/`ml`/`hl` leg motor neurons split by side, `wm` wing, `nm` neck, DNa02 left/right for steering, DNp01 for escape, DNp09 for guard, pC1 for aggression
   - Escape threshold anchored to biology: real flies initiate escape at roughly 20–40° angular size, and the chosen GF rate produces first escape at **31°**
   - Escape refractory of 150 ms — a physical constraint on the body, not a tunable
-  - **Frozen.** If a fighter behaves badly the fix is its biological profile, never this file
+  - Steering rates estimated over 250 ms, not one tick. DNa02 is one neuron per side firing at ~2 Hz, so a 20 ms window holds a spike 4% of the time and the per-tick asymmetry is almost always exactly zero
+  - **Frozen against outcomes.** Two corrections have been made to this file, both anatomical rather than behavioural: DNa02 drives an *ipsilateral* turn (the sign was inverted, so fighters steered away from what they were looking at), and the rate estimator above. Neither was chosen by watching who won
 - [x] Chunked simulation loop with state carried across ticks — each fighter's brain advances 20 ms per tick with membrane state intact
+- [x] Solid bodies and lunging attacks — an attack drives the body forward about one body length, which is what makes it visible to the defender's loom detectors. Fighters cannot walk through each other
 - [x] Fighter builder (`fbg/fighters.py`) — profiles applied as lesions, neuromodulator tonic drive, sensory gains and escape threshold
 - [x] Fight renderer (`scripts/render_fight.py`) — arena above, both brains below, health bars and action labels. Real-time playback, deterministic from a seed so any match can be re-rendered
 
@@ -90,11 +95,13 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
 
 Decisions this project imposes rather than reads from the connectome. Each is here because the alternative was a simulation that does nothing.
 
-**Baseline locomotor drive (8 Hz to descending neurons).** With no drive, leg motor rate is 0 and the fighters never move. Flies walk spontaneously; descending neurons and the nerve cord's pattern generators are tonically active.
+**Baseline locomotor drive (8 Hz to descending neurons).** With no drive, leg motor rate is 0 and the fighters never move. Flies walk spontaneously; descending neurons and the nerve cord's pattern generators are tonically active. It deliberately skips the four populations the decoder reads — driving DNa02 as a Poisson source means the steering readout measures the drive rather than the circuit, which showed up as a standing turn bias of 13.8 Hz left against 7.2 Hz right with nothing in view; doing it to DNp01 hands the escape reflex spikes it never earned.
 
 **Arena scale (25 mm radius, 14 mm start).** At 36 mm an opponent subtends under 5° and recruits under 1% of the loom detectors, so neither fighter ever sees the other — and neither can approach, because seeing is what drives approach. Real fly aggression assays use chambers a couple of centimetres across.
 
-**Rival detection driving pC1 (proximity-scaled, up to 11 Hz).** Measured: pC1 receives essentially nothing from looming alone — 0.0 to 0.3 Hz against a 6 Hz attack gate — so without this no fighter ever attacks. Real fly aggression is triggered by detecting a rival male through pheromone (cVA via Or67d) and vision. There is no pheromone channel here, so proximity stands in for it.
+**Rival detection driving pC1 (inverse-square, up to 25 Hz at contact).** Measured: pC1 receives essentially nothing from looming alone — 0.0 to 0.3 Hz against a 6 Hz attack gate — so without this no fighter ever attacks. Real fly aggression is triggered by detecting a rival male through pheromone (cVA via Or67d) and vision. There is no pheromone channel here, so proximity stands in for it, falling off as a diffusing point source does and saturating at about one body length. The rate is anchored to a measurement rather than to fight outcomes: 25 Hz is where pC1's suppression of the giant fiber becomes measurable against the looming drive the arena actually reaches during a lunge.
+
+**Spontaneous search saccades (1.5/s, suppressed while a target is tracked).** Walking flies make rapid spontaneous turns and suppress them while fixating, which is how a fly that has lost sight of something finds it again. This model has no central saccade generator, so the arena supplies the command and lets DNa02 turn it into a turn — vision and this drive converge on the same neuron, as they do in the animal. Without it the blind arc behind a fighter is an absorbing state.
 
 **Octopamine as tonic drive** to the octopaminergic population rather than gain modulation (METHODS §3.2, option A).
 
@@ -102,7 +109,19 @@ Decisions this project imposes rather than reads from the connectome. Each is he
 
 Genuinely unresolved, and contributions or opinions are welcome:
 
-**Fights stall.** Around ten seconds the fighters separate and stop re-engaging: rival drive falls off with distance, so once apart neither has a reason to close. Needs a reason to seek — wider rival range, a wall-avoidance bias, or an aggression state that persists once triggered.
+**~~Fights stall.~~ Resolved.** Instrumenting a match showed the fighters were not drifting apart for want of motivation — they were never steering at all. Five separate faults, each masking the next:
+
+1. **No visual input reached the steering neurons.** LC4 and LPLC2 have zero direct edges onto DNa02. Adding LC10a, the male target-tracking channel, gives the steering neurons something to steer by; one-sided LC10a drive produces a DNa02 asymmetry of ±0.9 against a baseline of exactly zero.
+2. **The turn sign was inverted.** DNa02 drives an ipsilateral turn, and the readout had it the other way round, so any steering signal that did arrive pushed the fighter away from what it was looking at.
+3. **Advancing triggered the fighter's own escape reflex.** Expansion was measured against the fighter's own movement as well as the opponent's, so closing the distance looked like being charged. 71 dodges against 19 attacks in a 30-second match.
+4. **The eye split was inflated 2× and clipped**, so every bearing off dead-ahead saturated the nearer eye and the left/right contrast the readout depends on disappeared.
+5. **The steering rate was estimated from a single 20 ms window.** DNa02 is one neuron per side at ~2 Hz, so that window is empty 96% of the time and the asymmetry it reports is almost always exactly zero.
+
+Matches now hold engagement for their full duration — mean separation over the last five seconds is 3–15 mm rather than the 45 mm of opposite walls — and five of eight sample matchups end with a winner.
+
+**Strikes almost never miss.** `_resolve_strike` re-checks range but nothing else, and after a lunge the attacker is nearly always still in range — one miss in roughly 157 attacks across nine sample matchups. A defender that dodges during the windup ought to be gone when the strike resolves, and at present it usually is not.
+
+**DNp09 never fires, so nothing ever guards.** The guard action was previously reached on 25% of ticks, but entirely because the blanket locomotor drive was injecting Poisson spikes straight into DNp09. With that removed the honest readout is zero — nothing in the arena drives a stopping command. Either the model needs a reason to stop, or guard is not a mechanic this connectome supports.
 
 **Does the raw circuit produce legible behavior?** Untrained connectome output may be too erratic to read as fighting. If so, the mitigation is presentation — slower pacing, clearer visualization — not adding a trained controller.
 

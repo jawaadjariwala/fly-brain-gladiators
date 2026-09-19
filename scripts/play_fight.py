@@ -14,16 +14,14 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import pyarrow.compute as pc
-import pyarrow.feather as feather
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 import pygame
 
 from fbg.arena import Match, TICK_MS
 from fbg.connectome import build
-from fbg.data import SOURCES
 from fbg.fighters import build_fighter, load_all
+from fbg.stimulus import visual_pools
 from fbg.game.renderer import FPS, H, W, FightRenderer, _lerp, _lerp_angle
 from fbg.render import soma_positions
 from fbg.subgraph import extract
@@ -31,18 +29,6 @@ from fbg.subgraph import extract
 OUT = Path("renders")
 TINTS = [(90, 200, 226), (236, 104, 78)]
 BRAIN_DIM = (26, 32, 42)
-
-
-def loom_sides(c, im):
-    t = feather.read_table(SOURCES["annotations"].path,
-        columns=["bodyId", "type", "superclass", "somaSide"], memory_map=True)
-    ann = t.filter(pc.is_valid(t.column("superclass"))).to_pandas()
-    out = []
-    for sd in ("L", "R"):
-        m = ann["type"].isin(["LC4", "LPLC2", "LC6"]) & (ann["somaSide"] == sd)
-        ix = [c.index_of[int(b)] for b in ann.loc[m, "bodyId"] if int(b) in c.index_of]
-        out.append(np.array(sorted({im[i] for i in ix if i in im}), np.int32))
-    return out
 
 
 def main():
@@ -53,9 +39,9 @@ def main():
     c = build()
     sub, keep, seeds = extract(c, hops=1)
     im = {int(f): i for i, f in enumerate(keep)}
-    ll, lr = loom_sides(c, im)
+    eyes = visual_pools(c, im)
     profs = {p.name: p for p in load_all().values()}
-    fighters = [build_fighter(profs[n], c, sub, im, seeds, ll, lr)
+    fighters = [build_fighter(profs[n], c, sub, im, seeds, eyes)
                 for n in (a_name, b_name)]
 
     print(f"{a_name} ({fighters[0].weapon.name}) vs {b_name} ({fighters[1].weapon.name})")

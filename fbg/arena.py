@@ -20,7 +20,9 @@ import numpy as np
 
 from fbg.lif import Network, Params
 from fbg.motor import Decoder, Pools
-from fbg.stimulus import FULL_FIELD_DEG, MAX_HZ, MIN_HZ, angular_size
+from fbg.stimulus import (FULL_FIELD_DEG, MAX_HZ, MIN_HZ, REAR_BLIND_DEG,
+                          TRACK_FIELD_DEG, TRACK_HZ, Eyes, angular_size,
+                          eye_weights)
 
 TICK_MS = 20.0
 # Real fly aggression assays use chambers a couple of centimetres across.
@@ -42,8 +44,32 @@ BASELINE_LOCOMOTOR_HZ = 8.0
 # pheromone channel in this model, so proximity stands in for "a rival is
 # right there". Measured: pC1 receives essentially nothing from looming alone
 # (0.0-0.3 Hz against a 6 Hz gate), so without this the attack gate never opens.
-RIVAL_RANGE_MM = 12.0
-RIVAL_DRIVE_HZ = 11.0
+#
+# The falloff is the inverse-square law a diffusing point source obeys,
+# saturating at contact — about one body length. The rate is anchored to a
+# measurement, not to fight outcomes: driving pC1 at 8 Hz of looming input cuts
+# the giant fiber by 52%, but at the 20 Hz the arena reaches during a lunge the
+# same drive does nothing, and 25 Hz is where suppression becomes measurable
+# again. See "aggression suppresses escape" below.
+RIVAL_CONTACT_MM = 4.0
+RIVAL_DRIVE_HZ = 25.0
+
+# ⚠ MODELLING CHOICE, like the rival drive above.
+# Walking flies make spontaneous body saccades — rapid turns of a few tens of
+# degrees, one or two a second — and suppress them while they are fixating
+# something. That is how a fly which has lost sight of a target finds it again.
+# This model has no central saccade generator, so the arena supplies the
+# command and lets DNa02, the steering command neuron, turn it into a turn:
+# vision and this drive converge on the same neuron, which is where they
+# converge in the animal too.
+#
+# Without it the blind arc behind a fighter is an absorbing state. Two
+# fighters that end up back to back have no visual input at all, so the
+# steering readout is exactly zero, and they walk to opposite walls and stay
+# there for the rest of the match. Measured: 87% of ticks against the wall.
+SACCADE_PER_S = 1.5
+SACCADE_MS = 120.0
+SACCADE_DRIVE_HZ = 30.0
 
 
 @dataclass(frozen=True)
@@ -72,6 +98,12 @@ WEAPONS = {
 MAX_TURN_RAD = 3.2 * TICK_MS / 1000.0     # rad per tick at full turn signal
 MAX_SPEED = 34.0 * TICK_MS / 1000.0       # mm per tick at full advance
 DODGE_IMPULSE = 5.5                        # mm, backwards, on an escape
+# A fly's attack is a lunge — it drives its body forward, it does not stand
+# still and reach. That movement is also the whole dodge mechanic: an attacker
+# closing the distance IS a looming stimulus, so the defender's escape circuit
+# fires because something is actually coming at it. Without the lunge the
+# attack is invisible to the loom detectors and nobody ever dodges.
+LUNGE_MM = 3.0                             # about one body length, over the windup
 START_HEALTH = 100.0
 
 
@@ -95,8 +127,7 @@ class Fighter:
     net: Network
     pools: Pools
     decoder: Decoder
-    loom_left: np.ndarray
-    loom_right: np.ndarray
+    eyes: Eyes
     rng: np.random.Generator
 
     x: float = 0.0
@@ -111,6 +142,10 @@ class Fighter:
     guard_ms: float = 0.0       # remaining guard hold
     strike_ms: float = 0.0      # remaining strike flash
     facing_target: float = 0.0  # heading the body is easing toward
+    prev_x: float = 0.0         # position last tick, for corollary discharge
+    prev_y: float = 0.0
+    saccade_ms: float = 0.0     # remaining spontaneous search turn
+    saccade_left: bool = True
     aggression_gain: float = 1.0
     hits: int = 0
     dodges: int = 0
@@ -190,58 +225,114 @@ class Match:
             f.x, f.y = sign * START_SEPARATION / 2, float(rng.uniform(-3, 3))
             f.heading = 0.0 if sign < 0 else math.pi
             f.health = START_HEALTH
+            f.prev_x, f.prev_y = f.x, f.y      # no expansion on the first tick
 
     # -- perception ---------------------------------------------------------
-    def _see(self, self_f: Fighter, other: Fighter) -> tuple[float, float, float]:
+    def _see(self, self_f: Fighter, other: Fighter) -> tuple[float, float, float, float]:
+        """What one fighter's eyes report about the other.
+
+        The expansion rate is the part that matters, and it is measured with a
+        corollary discharge: from where this fighter is NOW, against where the
+        opponent WAS. A fly discounts the optic flow its own movement produces,
+        so walking towards an opponent generates no looming signal — only the
+        opponent closing the distance does. Without that subtraction a fighter
+        triggers its own escape reflex every time it advances, and the match
+        turns into two flies reeling away from each other.
+        """
         dx, dy = other.x - self_f.x, other.y - self_f.y
         dist = max(math.hypot(dx, dy), 1e-3)
         bearing = _wrap(math.atan2(dy, dx) - self_f.heading)
         theta = angular_size(BODY_RADIUS, dist)
-        return dist, bearing, theta
+        was = max(math.hypot(other.prev_x - self_f.x, other.prev_y - self_f.y), 1e-3)
+        d_theta = (theta - angular_size(BODY_RADIUS, was)) / (TICK_MS / 1000.0)
+        return dist, bearing, theta, d_theta
 
     def _drive_rival(self, f: Fighter, dist: float) -> None:
-        """Rival detection -> pC1. See RIVAL_RANGE_MM for why this exists."""
-        prox = float(np.clip((RIVAL_RANGE_MM - dist) / RIVAL_RANGE_MM, 0.0, 1.0))
+        """Rival detection -> pC1. See RIVAL_CONTACT_MM for why this exists."""
+        prox = float(np.clip((RIVAL_CONTACT_MM / dist) ** 2, 0.0, 1.0))
         f.net.add_tonic("rival", f.pools.aggression,
                         RIVAL_DRIVE_HZ * prox * f.aggression_gain)
 
-    def _drive(self, f: Fighter, bearing: float, theta: float, d_theta: float) -> None:
-        """Convert what a fighter sees into loom-detector input.
+    def _recruit(self, f: Fighter, left: np.ndarray, right: np.ndarray,
+                 frac: float, bearing: float) -> np.ndarray:
+        """Pick which neurons in a retinotopic pair of pools the target falls on.
 
-        Recruitment scales with angular area (LC neurons are retinotopic) and
-        splits between the eyes by bearing. Rate follows expansion.
+        How many neurons respond is set by the target's angular area; which eye
+        they sit in is set by where in the visual field it falls. The split is
+        the only thing carrying the direction, so it must not be inflated past
+        1.0 and clipped — doing that saturates the nearer eye at every bearing
+        off dead-ahead, and the left/right contrast the steering readout
+        depends on disappears.
         """
-        frac = float(np.clip((math.degrees(theta) / FULL_FIELD_DEG) ** 2, 0.0, 1.0))
-        rate = MIN_HZ + (MAX_HZ - MIN_HZ) * float(np.clip(d_theta / 0.9, 0.0, 1.0))
-
-        # bearing -> eye weighting. Positive bearing is to the fighter's left.
-        right_w = float(np.clip(0.5 - 0.5 * math.sin(bearing), 0.05, 0.95))
-        left_w = 1.0 - right_w
-        if math.cos(bearing) < -0.2:      # behind: the eyes barely see it
-            frac *= 0.15
-
+        left_w, right_w = eye_weights(bearing)
         picks = []
-        for pool, w in ((f.loom_left, left_w), (f.loom_right, right_w)):
-            k = int(round(len(pool) * frac * w * 2.0))
+        for pool, w in ((left, left_w), (right, right_w)):
+            k = min(int(round(len(pool) * frac * w)), len(pool))
             if k > 0:
-                picks.append(f.rng.choice(pool, min(k, len(pool)), replace=False))
-        if picks:
-            f.net.set_poisson(np.concatenate(picks), rate)
-        else:
-            f.net.clear_poisson()
+                picks.append(f.rng.choice(pool, k, replace=False))
+        return np.concatenate(picks) if picks else np.array([], np.int32)
+
+    def _search(self, f: Fighter, tracking: bool) -> None:
+        """Spontaneous search saccades, suppressed while fixating a target."""
+        if tracking:
+            f.saccade_ms = 0.0
+            f.net.add_tonic("saccade", f.pools.dna02_left, 0.0)
+            return
+        if f.saccade_ms > 0:
+            f.saccade_ms -= TICK_MS
+        elif f.rng.random() < SACCADE_PER_S * TICK_MS / 1000.0:
+            f.saccade_left = bool(f.rng.random() < 0.5)
+            f.saccade_ms = SACCADE_MS
+        pool = f.pools.dna02_left if f.saccade_left else f.pools.dna02_right
+        f.net.add_tonic("saccade", pool,
+                        SACCADE_DRIVE_HZ if f.saccade_ms > 0 else 0.0)
+
+    def _drive(self, f: Fighter, bearing: float, theta: float, d_theta: float) -> None:
+        """Convert what a fighter sees into visual input, on both channels.
+
+        Recruitment scales with angular area on each channel, because LC
+        neurons are retinotopic — but the two channels tile the field at
+        different grains, so the same target reaches a useful number of
+        trackers long before it reaches a useful number of loom detectors.
+        """
+        in_view = abs(math.degrees(bearing)) < 180.0 - REAR_BLIND_DEG / 2
+
+        # looming: escape. Rate follows expansion, and only the opponent's
+        # share of it — see _see.
+        loom_frac = float(np.clip((math.degrees(theta) / FULL_FIELD_DEG) ** 2, 0.0, 1.0))
+        if not in_view:
+            loom_frac = 0.0
+        rate = MIN_HZ + (MAX_HZ - MIN_HZ) * float(np.clip(d_theta / 0.9, 0.0, 1.0))
+        f.net.set_poisson(
+            self._recruit(f, f.eyes.loom_left, f.eyes.loom_right, loom_frac, bearing),
+            rate, channel="loom")
+
+        # target tracking: pursuit. A target either is or is not being
+        # tracked, so the rate is fixed and only the recruitment varies.
+        track_frac = float(np.clip((math.degrees(theta) / TRACK_FIELD_DEG) ** 2, 0.0, 1.0))
+        if not in_view:
+            track_frac = 0.0
+        f.net.set_poisson(
+            self._recruit(f, f.eyes.track_left, f.eyes.track_right, track_frac, bearing),
+            TRACK_HZ, channel="track")
+
+        self._search(f, tracking=track_frac > 0.02)
 
     # -- one tick -----------------------------------------------------------
     def step(self) -> None:
         t_ms = self.tick * TICK_MS
         seen = {}
         for me, you in ((self.a, self.b), (self.b, self.a)):
-            dist, bearing, theta = self._see(me, you)
-            prev = getattr(me, "_last_theta", theta)
-            me._last_theta = theta
-            d_theta = (theta - prev) / (TICK_MS / 1000.0)
+            dist, bearing, theta, d_theta = self._see(me, you)
             self._drive(me, bearing, theta, d_theta)
             self._drive_rival(me, dist)
             seen[me.name] = (dist, bearing)
+        # Snapshot AFTER perceiving and BEFORE moving, so that next tick
+        # `prev` holds where the opponent was when it was last looked at and
+        # the difference is exactly this tick's movement. Recording it after
+        # the move instead makes every expansion rate identically zero.
+        for f in (self.a, self.b):
+            f.prev_x, f.prev_y = f.x, f.y
 
         actions, spikes = {}, {}
         for f in (self.a, self.b):
@@ -253,6 +344,7 @@ class Match:
 
         for me, you in ((self.a, self.b), (self.b, self.a)):
             self._apply(me, you, actions[me.name], *seen[me.name], t_ms)
+        self._separate()
 
         for f, act in ((self.a, actions[self.a.name]), (self.b, actions[self.b.name])):
             f.advance_state(moving=act.advance > 0.05 and not act.guard)
@@ -267,10 +359,57 @@ class Match:
         ))
         self.tick += 1
 
+    def _confine(self, f: Fighter) -> None:
+        """Keep a fighter inside the arena wall.
+
+        Projecting the position back onto the circle keeps the angle it
+        reached, so the tangential part of a step survives and only the outward
+        part is lost: a fighter driven into the wall at an angle slides along
+        it. One driven straight at it does stay put — what gets it moving again
+        is seeing the opponent and turning.
+        """
+        limit = ARENA_RADIUS - BODY_RADIUS
+        r = math.hypot(f.x, f.y)
+        if r > limit:
+            f.x *= limit / r
+            f.y *= limit / r
+
+    def _move(self, f: Fighter, step: float) -> None:
+        """Translate along the current heading, then keep inside the arena."""
+        f.x += math.cos(f.heading) * step
+        f.y += math.sin(f.heading) * step
+        f.distance_travelled += abs(step)
+        self._confine(f)
+
+    def _separate(self) -> None:
+        """Bodies are solid: two fighters cannot occupy the same space.
+
+        Without this they walk through each other, and a fighter standing
+        inside its opponent sees a bearing that swings through 180 degrees
+        tick to tick — no steering signal survives that.
+        """
+        dx, dy = self.b.x - self.a.x, self.b.y - self.a.y
+        d = math.hypot(dx, dy)
+        floor = BODY_RADIUS * 2
+        if d >= floor:
+            return
+        if d < 1e-6:                     # exactly coincident: pick an axis
+            dx, dy, d = 1.0, 0.0, 1.0
+        push = (floor - d) / 2.0
+        ux, uy = dx / d, dy / d
+        self.a.x -= ux * push
+        self.a.y -= uy * push
+        self.b.x += ux * push
+        self.b.y += uy * push
+        self._confine(self.a)
+        self._confine(self.b)
+
     def _apply(self, f: Fighter, other: Fighter, act, dist: float,
                bearing: float, t_ms: float) -> None:
         # resolve a strike already in flight
         if f.striking_in >= 0:
+            if f.striking_in > 0:       # winding up: drive the body forward
+                self._move(f, LUNGE_MM * TICK_MS / f.weapon.windup_ms)
             f.striking_in -= TICK_MS
             if f.striking_in <= 0:
                 f.striking_in = -1.0
@@ -282,8 +421,7 @@ class Match:
             return
 
         if act.dodge:
-            f.x -= math.cos(f.heading) * DODGE_IMPULSE
-            f.y -= math.sin(f.heading) * DODGE_IMPULSE
+            self._move(f, -DODGE_IMPULSE)
             f.dodges += 1
             f.dodge_ms = DODGE_ANIM_MS
             self.events.append(Event(self.tick, t_ms, "dodge", f.name,
@@ -293,10 +431,7 @@ class Match:
             if act.guard:
                 f.guard_ms = GUARD_HOLD_MS
             if not act.guard:
-                step = act.advance * MAX_SPEED * f.weapon.speed
-                f.x += math.cos(f.heading) * step
-                f.y += math.sin(f.heading) * step
-                f.distance_travelled += step
+                self._move(f, act.advance * MAX_SPEED * f.weapon.speed)
 
             in_range = dist <= BODY_RADIUS * 2 + f.weapon.reach
             facing = abs(bearing) < math.radians(45)
@@ -307,13 +442,6 @@ class Match:
                 f.guard_ms = 0.0
                 self.events.append(Event(self.tick, t_ms, "attack", f.name,
                                          {"dist": round(dist, 1)}))
-
-        # keep inside the arena
-        r = math.hypot(f.x, f.y)
-        if r > ARENA_RADIUS - BODY_RADIUS:
-            scale = (ARENA_RADIUS - BODY_RADIUS) / r
-            f.x *= scale
-            f.y *= scale
 
     def _resolve_strike(self, f: Fighter, other: Fighter, t_ms: float) -> None:
         dx, dy = other.x - f.x, other.y - f.y

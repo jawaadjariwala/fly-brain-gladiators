@@ -18,7 +18,7 @@ Two gladiators fight in an arena. Both are controlled by the real fruit fly conn
 
 ---
 
-> **Status: pre-implementation.** Documentation and design are complete; the simulation is not built yet. See [`ROADMAP.md`](ROADMAP.md).
+> **Status: the simulation runs.** The connectome loads, the network spikes, and matches play out end to end in a window or to mp4. The roster and tournament runner are not built yet. See [`ROADMAP.md`](ROADMAP.md).
 
 ## Documentation
 
@@ -39,7 +39,19 @@ A lunging opponent *is* a looming stimulus. So the dodge mechanic wasn't designe
 opponent lunges → LC4/LPLC2 fire → giant fiber spikes → fighter jumps back
 ```
 
-That's a documented circuit doing exactly what a fighting game needs.
+That's a documented circuit doing exactly what a fighting game needs — and it only works because an attack really does drive the body forward. Standing still and reaching produces no expansion, nothing for the loom detectors to see, and no dodge.
+
+The same geometry is why a fighter has to discount its own movement. Expansion is measured from where a fighter is now against where its opponent *was*, which is the corollary discharge a fly uses to tell its own optic flow from the world's. Without it, advancing on an opponent looks exactly like being charged by one, and a fighter triggers its own escape reflex every time it steps forward.
+
+## Steering is a different circuit entirely
+
+Looming detectors have **zero** direct connections onto DNa02, the steering neuron. A fighter that only watches for collisions cannot turn towards anything.
+
+What it steers by is **LC10a**, the channel a male fly uses to track another fly. Driving it on one side produces a clean DNa02 asymmetry — ±0.9 against a baseline of exactly zero — and DNa02 turns the fly towards that side.
+
+```
+opponent off to one side → LC10a in that eye → DNa02 on that side → turn towards it
+```
 
 ---
 

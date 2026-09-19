@@ -14,7 +14,8 @@ fighter's biological profile, never this file.
 
 Anatomical basis
 ----------------
-DNa02      steering; left/right firing asymmetry sets turn direction
+DNa02      steering; drives an ipsilateral turn, so the left/right firing
+           asymmetry sets turn direction
 DNp01      the giant fiber — one spike is a full escape command
 DNp09      drives stopping and freezing
 fl/ml/hl   front, middle and hind leg motor neurons, split by side
@@ -25,6 +26,7 @@ pC1        male-specific aggression population (P1 is a subset of pC1)
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -50,6 +52,19 @@ ESCAPE_REFRACTORY_MS = 150.0 # a fly cannot jump again immediately
 GUARD_HZ = 8.0               # DNp09 rate above which the fighter holds position
 ATTACK_HZ = 6.0              # aggression-circuit rate that opens the attack gate
 TURN_DEADZONE = 0.08         # |asymmetry| below this reads as straight ahead
+# The steering rates are estimated over a window, not read off one tick.
+#
+# DNa02 is one neuron per side and fires at about 2 Hz under visual drive, so
+# a 20 ms window contains a spike 4% of the time. The asymmetry computed from
+# a single window is therefore almost always exactly zero, and occasionally
+# +-1 — and averaging THAT throws the magnitude away and leaves a mean far
+# below the deadzone, which is why a fighter reading it tick by tick never
+# turns at all. Averaging the rates first and taking the asymmetry of the
+# estimates is both the correct estimator and what a downstream neuron
+# integrating its input would compute. A body cannot reverse a turn inside one
+# tick either, so the same memory stands in for the low-pass that muscle and
+# inertia impose.
+STEER_TAU_MS = 250.0
 WALK_REFERENCE_HZ = 25.0     # leg-pool rate mapped to full forward speed
 
 
@@ -78,7 +93,9 @@ class Pools:
 class Action:
     """What the fighter does this tick. All derived, none trained."""
 
-    turn: float = 0.0        # -1 full left … +1 full right
+    # +1 turns towards the fighter's left, matching the arena, which adds
+    # `turn` to the heading, and bearings, which are positive to the left.
+    turn: float = 0.0        # -1 full right … +1 full left
     advance: float = 0.0     # 0 … 1 forward drive
     dodge: bool = False      # giant fiber fired — escape jump
     guard: bool = False      # DNp09 dominant — hold position
@@ -151,9 +168,11 @@ class Decoder:
         # system (how readily its escape neuron fires), not a tuned parameter.
         self.giant_fiber_hz = giant_fiber_hz
         self.ms_since_escape = ESCAPE_REFRACTORY_MS
+        self.steering = np.zeros(4)      # DNa02 L/R and leg L/R, smoothed
 
     def reset(self) -> None:
         self.ms_since_escape = ESCAPE_REFRACTORY_MS
+        self.steering = np.zeros(4)
 
     def __call__(self, record, window_ms: float) -> Action:
         self.ms_since_escape += window_ms
@@ -163,24 +182,42 @@ class Decoder:
             self.ms_since_escape = 0.0
             # The giant fiber is a command neuron: escape overrides everything.
             return Action(dodge=True)
-        return decode(record, self.pools, self.n)
+
+        keep = math.exp(-window_ms / STEER_TAU_MS)
+        now = np.array([_rate(record, p, self.n) for p in
+                        (self.pools.dna02_left, self.pools.dna02_right,
+                         self.pools.leg_left, self.pools.leg_right)])
+        self.steering = keep * self.steering + (1.0 - keep) * now
+        return decode(record, self.pools, self.n, steering=tuple(self.steering))
 
 
-def decode(record, pools: Pools, n_neurons: int) -> Action:
-    """Actions other than escape. Pure function of the rates."""
+def decode(record, pools: Pools, n_neurons: int,
+           steering: tuple[float, float, float, float] | None = None) -> Action:
+    """Actions other than escape. Pure function of the rates.
+
+    `steering` supplies the DNa02 left/right and leg left/right rates when the
+    caller has a better estimate of them than a single window gives — see
+    STEER_TAU_MS. Without it they are read from this window alone.
+    """
     guard = _rate(record, pools.dnp09, n_neurons) >= GUARD_HZ
     attack = _rate(record, pools.aggression, n_neurons) >= ATTACK_HZ
 
-    # steering: descending asymmetry first, leg asymmetry as support
-    dl = _rate(record, pools.dna02_left, n_neurons)
-    dr = _rate(record, pools.dna02_right, n_neurons)
-    ll = _rate(record, pools.leg_left, n_neurons)
-    lr = _rate(record, pools.leg_right, n_neurons)
-    dn_asym = (dr - dl) / (dr + dl + 1.0)
+    # Steering: descending asymmetry first, leg asymmetry as support.
+    #
+    # Both terms are ordered by anatomy, not by what makes a fighter win.
+    # DNa02 drives an IPSILATERAL turn — the left-hand neuron steers the fly
+    # left — so left-minus-right is the term that points the fighter at what
+    # its left eye is tracking. The legs are the other way round: a fly turning
+    # left takes longer steps on the outside, so it is right-minus-left there.
+    if steering is None:
+        steering = (_rate(record, pools.dna02_left, n_neurons),
+                    _rate(record, pools.dna02_right, n_neurons),
+                    _rate(record, pools.leg_left, n_neurons),
+                    _rate(record, pools.leg_right, n_neurons))
+    dl, dr, ll, lr = steering
+    dn_asym = (dl - dr) / (dr + dl + 1.0)
     leg_asym = (lr - ll) / (lr + ll + 1.0)
     turn = 0.7 * dn_asym + 0.3 * leg_asym
-    if abs(turn) < TURN_DEADZONE:
-        turn = 0.0
 
     advance = 0.0 if guard else min((ll + lr) / 2.0 / WALK_REFERENCE_HZ, 1.0)
 

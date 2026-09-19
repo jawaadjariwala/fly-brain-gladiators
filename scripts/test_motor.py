@@ -7,10 +7,15 @@ from __future__ import annotations
 
 import numpy as np
 
+import math
+
+from fbg.arena import BODY_RADIUS, MAX_TURN_RAD, _wrap
 from fbg.connectome import build
 from fbg.lif import Network, Params
 from fbg.motor import Decoder, build_pools
-from fbg.stimulus import approach, expansion_to_rate, recruited_fraction
+from fbg.stimulus import (TRACK_FIELD_DEG, TRACK_HZ, angular_size, approach,
+                          expansion_to_rate, eye_weights, recruited_fraction,
+                          visual_pools)
 from fbg.subgraph import extract, seed_indices
 
 TICK_MS = 20.0
@@ -64,6 +69,37 @@ def main():
         print("  (real flies initiate escape at roughly 20-40°)")
     else:
         print("\n  never dodged — check the giant fiber pool")
+
+    print("\n── target tracking: does the fighter turn towards a target? ──")
+    print("  A stationary target 10 mm away, off to one side. Only the LC10a")
+    print("  tracking channel is driven. The fighter should bring it inside")
+    print("  the 45 degree cone it can strike into.")
+    eyes = visual_pools(c, remap)
+    print(f"  pools: {eyes.summary()}")
+    target_dist = 10.0
+    target_theta = angular_size(BODY_RADIUS, target_dist)
+    frac = float(np.clip((math.degrees(target_theta) / TRACK_FIELD_DEG) ** 2, 0.0, 1.0))
+    for start_deg in (-120.0, -60.0, 60.0, 120.0):
+        net.rng = np.random.default_rng(5); net.reset(); dec.reset()
+        pick_rng = np.random.default_rng(9)     # sample as the arena does
+        bearing = math.radians(start_deg)
+        track = []
+        for _ in range(200):                       # 4 s
+            lw, rw = eye_weights(bearing)
+            picks = [pick_rng.choice(pool, min(len(pool),
+                         max(1, int(round(len(pool) * frac * w * 2.0)))), replace=False)
+                     for pool, w in ((eyes.track_left, lw), (eyes.track_right, rw))
+                     if len(pool)]
+            net.set_poisson(np.concatenate(picks) if picks else
+                            np.array([], np.int32), TRACK_HZ, channel="track")
+            a = dec(net.run(TICK_MS), TICK_MS)
+            # the target holds still, so turning the body moves the bearing
+            bearing = _wrap(bearing - a.turn * MAX_TURN_RAD)
+            track.append(abs(math.degrees(bearing)))
+        inside = next((i for i, b in enumerate(track) if b < 45.0), None)
+        when = f"in {inside * TICK_MS / 1000:.1f}s" if inside is not None else "never"
+        print(f"  target at {start_deg:>+6.0f}°  ->  |bearing| {track[-1]:>5.0f}° "
+              f"after 4 s;  inside the strike cone {when}")
 
 
 if __name__ == "__main__":
