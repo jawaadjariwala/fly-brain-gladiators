@@ -34,7 +34,7 @@ from fbg.game.renderer import FightRenderer, H, W, _lerp, _lerp_angle
 from fbg.render import soma_positions
 from fbg.subgraph import extract
 
-WIN_W, WIN_H = 600, 1066        # window; the scene renders at 1080x1920 and scales
+SCENE_ASPECT = 1080 / 1920      # the scene renders at 1080x1920 and is scaled down
 TINTS = [(90, 200, 226), (236, 104, 78)]
 SPEEDS = [0.25, 0.5, 1.0, 2.0, 4.0]
 
@@ -71,7 +71,16 @@ def main():
     brain_pts = np.flatnonzero(brain)
 
     pygame.init()
-    screen = pygame.display.set_mode((WIN_W, WIN_H))
+    # Fit the window to the display. A fixed 600x1066 is taller than a 13"
+    # laptop screen, and the part that goes off the top is the HUD — the names
+    # and health bars sit in the first 130 px of the scene.
+    try:
+        avail_h = pygame.display.Info().current_h
+    except pygame.error:
+        avail_h = 1000
+    win_h = max(480, min(1000, int(avail_h * 0.82)))
+    win_w = int(round(win_h * SCENE_ASPECT))
+    screen = pygame.display.set_mode((win_w, win_h), pygame.RESIZABLE)
     pygame.display.set_caption(f"Fly Brain Gladiators — {a_name} vs {b_name}")
     scene = pygame.Surface((W, H))
     clock = pygame.time.Clock()
@@ -80,15 +89,41 @@ def main():
                       TINTS, (0, 190, W, 1180))
     r.cam.cx, r.cam.cy = (frames[0].ax + frames[0].bx) / 2, 0.0
 
+    # The static layer of each brain panel: the plate, and every neuron at its
+    # soma position. None of it changes between frames, so it is drawn once.
+    # Per frame it was ~2,500 set_at calls a side, every frame, for a picture
+    # that is identical every time.
+    panels = []
+    for side in range(2):
+        px0, py0 = 70 + side * (W // 2 - 20), H - 440
+        pw, ph = W // 2 - 120, 300
+        plate = pygame.Surface((pw + 28, ph + 28), pygame.SRCALPHA)
+        pygame.draw.rect(plate, (14, 17, 22), plate.get_rect(), border_radius=10)
+        for j in brain_pts[::6]:
+            sx = int(14 + (bx[j] - bx0) / (bx1 - bx0) * pw)
+            sy = int(14 + (by[j] - by0) / (by1 - by0) * ph)
+            if 0 <= sx < plate.get_width() and 0 <= sy < plate.get_height():
+                plate.set_at((sx, sy), (26, 32, 42))
+        panels.append((plate, (px0 - 14, py0 - 14), px0, py0, pw, ph))
+
     pos_t, playing, speed_i = 0.0, True, 2
     show_brain, show_hud, follow = True, True, True
     running, want_shot = True, False
 
     while running:
-        dt = clock.tick(60) / 1000.0
+        # Capped, because dt drives both playback position and the camera
+        # easing. One slow frame would otherwise skip the fight forward by
+        # however long the stall lasted and snap the camera to catch up, which
+        # reads as the fighters teleporting.
+        dt = min(clock.tick(60) / 1000.0, 0.05)
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 running = False
+            elif ev.type == pygame.VIDEORESIZE:
+                # Keep the scene's aspect ratio whatever shape the window is
+                # dragged into; letterbox rather than stretch.
+                win_h = max(320, min(ev.h, int(ev.w / SCENE_ASPECT)))
+                win_w = int(round(win_h * SCENE_ASPECT))
             elif ev.type == pygame.KEYDOWN:
                 if ev.key in (pygame.K_ESCAPE, pygame.K_q):
                     running = False
@@ -150,19 +185,12 @@ def main():
         if show_brain:
             for side, (spk, tint) in enumerate(((f0.a_spikes, TINTS[0]),
                                                 (f0.b_spikes, TINTS[1]))):
-                px0, py0 = 70 + side * (W // 2 - 20), H - 440
-                pw, ph = W // 2 - 120, 300
-                pygame.draw.rect(scene, (14, 17, 22),
-                                 (px0 - 14, py0 - 14, pw + 28, ph + 28), border_radius=10)
-                def to_px(vx, vy):
-                    return (px0 + (vx - bx0) / (bx1 - bx0) * pw,
-                            py0 + (vy - by0) / (by1 - by0) * ph)
-                for j in brain_pts[::6]:
-                    sx, sy = to_px(bx[j], by[j])
-                    scene.set_at((int(sx), int(sy)), (26, 32, 42))
+                plate, at, px0, py0, pw, ph = panels[side]
+                scene.blit(plate, at)
                 if len(spk):
                     for j in spk[brain[spk]][::3]:
-                        sx, sy = to_px(bx[j], by[j])
+                        sx = px0 + (bx[j] - bx0) / (bx1 - bx0) * pw
+                        sy = py0 + (by[j] - by0) / (by1 - by0) * ph
                         pygame.draw.circle(scene, tint, (int(sx), int(sy)), 2)
 
         if show_hud:
@@ -175,7 +203,7 @@ def main():
             pygame.draw.rect(scene, (150, 168, 184),
                              (80, H - 96, int(bw * pos_t / total_s), 6), border_radius=3)
             info = (f"{'▶' if playing else '❚❚'}  {SPEEDS[speed_i]:g}×   "
-                    f"tick {i0}/{len(frames)}   "
+                    f"tick {i0}/{len(frames)}   {clock.get_fps():.0f} fps   "
                     f"[space] [←→] [↑↓] [c]am [b]rain [h]ud [r]estart")
             lbl = r.f_small.render(info, True, (122, 136, 148))
             scene.blit(lbl, (W // 2 - lbl.get_width() // 2, H - 72))
@@ -187,7 +215,9 @@ def main():
             print(f"saved {p}")
             want_shot = False
 
-        pygame.transform.smoothscale(scene, (WIN_W, WIN_H), screen)
+        if screen.get_size() != (win_w, win_h):
+            screen = pygame.display.set_mode((win_w, win_h), pygame.RESIZABLE)
+        pygame.transform.smoothscale(scene, (win_w, win_h), screen)
         pygame.display.flip()
 
     pygame.quit()

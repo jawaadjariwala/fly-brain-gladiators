@@ -81,6 +81,7 @@ class FightRenderer:
         self.f_mono = pygame.font.SysFont("Menlo", 22)
         self.art = ArenaArt()
         self.shake = 0.0
+        self._shadows: dict[tuple[int, int], pygame.Surface] = {}
 
     # -- coordinate transform ----------------------------------------------
     def to_screen(self, x: float, y: float) -> tuple[float, float]:
@@ -107,14 +108,24 @@ class FightRenderer:
             return
         sprite = self.sprites[i]
         sprite.scale = max(70.0, 5.2 * self.px_per_mm)
-        # shadow
-        sw = sprite.scale * 0.34
-        sh_surf = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
-        pygame.draw.ellipse(sh_surf, (0, 0, 0, 90),
-                            pygame.Rect(sx - sw, sy + sprite.scale * 0.14,
-                                        sw * 2, sw * 0.7))
-        surf.blit(sh_surf, (0, 0))
+        self._shadow(surf, sx, sy + sprite.scale * 0.14, sprite.scale * 0.34)
         sprite.draw(surf, sx, sy, heading, state, state_ms, self.weapons[i], flash)
+
+    def _shadow(self, surf, sx: float, sy: float, sw: float) -> None:
+        """A soft ellipse under a fighter.
+
+        Drawn on a surface the size of the shadow. Allocating one the size of
+        the whole scene instead — 8 MB per fighter per frame, then alpha-blitted
+        across all two million pixels — is most of what a frame used to cost.
+        """
+        key = (int(sw), int(sw * 0.35))
+        shadow = self._shadows.get(key)
+        if shadow is None:
+            shadow = pygame.Surface((key[0] * 2, max(1, int(key[0] * 0.7))),
+                                    pygame.SRCALPHA)
+            pygame.draw.ellipse(shadow, (0, 0, 0, 90), shadow.get_rect())
+            self._shadows[key] = shadow
+        surf.blit(shadow, (int(sx - sw), int(sy)))
 
     def draw_hud(self, surf, health, states, t_s, winner=None) -> None:
         for i in (0, 1):
