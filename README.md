@@ -65,15 +65,25 @@ Murmillo versus hoplomachus was a standard historical pairing — sword-and-heav
 
 ---
 
-## Reproducing a fight
+## Running it
 
-Every match is deterministic given its seed. Any result in the repo can be re-run and verified.
+Every match is deterministic given its seed, so any result here can be re-run and verified.
 
 ```bash
-# TODO: fill in once the CLI exists
-python -m fbg fight --a OCTAVIAN --b CASSIUS --seed 4471
-python -m fbg render --match <id>
+uv venv && uv pip install -e .
+python -m fbg.data                                  # fetch MaleCNS, ~1.1 GB
+
+# watch a fight in a window — pause, scrub, step, change camera
+PYTHONPATH=. python scripts/play_live.py OCTAVIAN CASSIUS 1
+
+# or render it to mp4
+PYTHONPATH=. python scripts/play_fight.py OCTAVIAN CASSIUS 1
+
+# just the numbers
+PYTHONPATH=. python scripts/fight.py OCTAVIAN CASSIUS 1
 ```
+
+**Viewer controls:** `space` pause · `← →` scrub and step · `↑ ↓` speed · `c` camera · `b` brain panels · `h` HUD · `r` restart · `s` screenshot
 
 ---
 

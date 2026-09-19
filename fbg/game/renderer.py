@@ -15,6 +15,7 @@ import numpy as np
 import pygame
 
 from fbg.arena import ARENA_RADIUS, TICK_MS
+from fbg.game.arena_art import ArenaArt
 from fbg.game.sprite import FlySprite
 
 W, H = 1080, 1920
@@ -54,6 +55,15 @@ class Camera:
         self.cy = _lerp(self.cy, ty, k)
         self.span = _lerp(self.span, target_span, min(dt * 1.6, 1.0))
 
+        # Keep the view inside the arena. Following the midpoint alone lets the
+        # camera wander past the wall when the fighters are near the edge, which
+        # fills half the frame with stands.
+        limit = max(ARENA_RADIUS - self.span * 0.32, 0.0)
+        d = math.hypot(self.cx, self.cy)
+        if d > limit and d > 0:
+            self.cx *= limit / d
+            self.cy *= limit / d
+
 
 class FightRenderer:
     def __init__(self, names, weapons, tints, arena_rect) -> None:
@@ -69,9 +79,7 @@ class FightRenderer:
         self.f_mid = pygame.font.SysFont("Helvetica", 26, bold=True)
         self.f_small = pygame.font.SysFont("Helvetica", 19)
         self.f_mono = pygame.font.SysFont("Menlo", 22)
-        rng = random.Random(7)
-        self.grit = [(rng.uniform(-1, 1), rng.uniform(-1, 1), rng.randint(1, 2))
-                     for _ in range(900)]
+        self.art = ArenaArt()
         self.shake = 0.0
 
     # -- coordinate transform ----------------------------------------------
@@ -87,16 +95,11 @@ class FightRenderer:
 
     # -- drawing ------------------------------------------------------------
     def draw_arena(self, surf: pygame.Surface) -> None:
+        clip = surf.get_clip()
+        surf.set_clip(self.rect)
         pygame.draw.rect(surf, INK, self.rect)
-        cx, cy = self.to_screen(0, 0)
-        r = ARENA_RADIUS * self.px_per_mm
-        pygame.draw.circle(surf, WALL, (int(cx), int(cy)), int(r + 10))
-        pygame.draw.circle(surf, SAND, (int(cx), int(cy)), int(r))
-        for gx, gy, gr in self.grit:
-            px, py = self.to_screen(gx * ARENA_RADIUS * 0.96, gy * ARENA_RADIUS * 0.96)
-            if math.hypot(px - cx, py - cy) < r - 4 and self.rect.collidepoint(px, py):
-                pygame.draw.circle(surf, SAND_LIGHT, (int(px), int(py)), gr + 1)
-        pygame.draw.circle(surf, (86, 74, 62), (int(cx), int(cy)), int(r), 3)
+        self.art.blit(surf, self.to_screen(0, 0), self.px_per_mm)
+        surf.set_clip(clip)
 
     def draw_fighter(self, surf, i, x, y, heading, state, state_ms, flash) -> None:
         sx, sy = self.to_screen(x, y)

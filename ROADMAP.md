@@ -73,7 +73,10 @@ Phase 1 is not complete until both validations pass. Everything downstream depen
   - The simulation advances in 4 ms slices with drive updated each slice, carrying membrane state across — the same loop the arena will use
 - [x] Rotating 3D volumetric renderer (`scripts/animate3d.py`) — all 139,662 positioned neurons drawn as a dense point cloud in perspective, one revolution per clip, activity glowing on top. The volumetric look comes from drawing every neuron dimly rather than only the active ones
 - [x] Animation state machine (`fbg/arena.py`) — the brain decides every 20 ms but a body cannot change what it is doing fifty times a second. States are committed sequences (windup → strike → recover, dodge, guard hold), and rendering reads those rather than the raw per-tick decision. Cut state changes from ~1 per tick to one per 140 ms
-- [x] Game renderer (`fbg/game/`, `scripts/play_fight.py`) — procedural fly sprites with posed legs, wings and weapons; interpolated motion at 60 fps; a camera that follows the action; sand arena
+- [x] Game renderer (`fbg/game/`) — procedural fly sprites with posed legs, wings and weapons; interpolated motion at 60 fps; a camera that follows the action and stays inside the arena
+- [x] Amphitheatre art (`fbg/game/arena_art.py`) — sand floor with grit and scuff marks, block-textured podium wall, tiered stands with crowd, gates at either end. Cached per zoom level
+- [x] **Interactive viewer** (`scripts/play_live.py`) — a real window with a game loop. Pause, scrub, step tick by tick, change speed, switch camera, toggle brain panels, screenshot. The match simulates once up front, so scrubbing backwards works
+- [x] Video export (`scripts/play_fight.py`) — the same renderer, headless, to mp4
 - [ ] Split-screen renderer: arena, spike raster, aggression state
 - [ ] Event log with timestamped neural and game events
 - [ ] Automated highlight clipping from the event log
