@@ -54,9 +54,14 @@
   </section>
 
   <aside class="brain-pane">
-    <h2>Brain activity</h2>
-    <p class="pending">The neural panel arrives next — this is where the two
-      connectomes and their spike meters go.</p>
+    <h2>Brain activity <small>every neuron at its real soma position</small></h2>
+    <div class="brains">
+      <figure><figcaption data-side="0"></figcaption><canvas id="brainA"></canvas></figure>
+      <figure><figcaption data-side="1"></figcaption><canvas id="brainB"></canvas></figure>
+    </div>
+    <h2>Spike rates <small>what each circuit drives</small></h2>
+    <div class="meters" id="meters"></div>
+    <ul class="legend" id="legend"></ul>
   </aside>
 </main>
 <script type="module" src="js/app.js"></script>

@@ -95,6 +95,9 @@ export async function loadMatch(url) {
     ...h,
     url,
     states: file.arrays.states,
+    // The header calls the population list `meters` and so does the rate
+    // array; keep them apart rather than letting one clobber the other.
+    meterSpec: h.meters,
     meters: file.arrays.meters,
     stateNames: h.states,
     spikes: decodeSpikes(file),
