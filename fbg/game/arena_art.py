@@ -21,13 +21,15 @@ import pygame
 
 from fbg.arena import ARENA_RADIUS
 
-SAND = (168, 140, 104)
-SAND_DK = (138, 112, 80)
-SAND_LT = (196, 170, 132)
-SCUFF = (120, 96, 68)
-PODIUM = (92, 84, 76)
-PODIUM_LT = (118, 109, 99)
-PODIUM_DK = (58, 52, 47)
+# Sand is dark and close to flat, with fine grit for texture. A bright floor
+# with broad scuff marks washes the fighters out — they are small, and the
+# contrast between them and the ground is what makes the fight readable.
+SAND = (72, 61, 48)
+SAND_DK = (58, 49, 39)
+SAND_LT = (96, 82, 64)
+PODIUM = (66, 60, 54)
+PODIUM_LT = (86, 79, 71)
+PODIUM_DK = (42, 38, 34)
 STAND = (48, 43, 40)
 STAND_DK = (34, 30, 28)
 CROWD = (72, 64, 62)
@@ -51,9 +53,6 @@ class ArenaArt:
         self.grit = [(self.rng.uniform(-1, 1), self.rng.uniform(-1, 1),
                       self.rng.randint(1, 3), self.rng.random())
                      for _ in range(2600)]
-        self.scuffs = [(self.rng.uniform(-0.85, 0.85), self.rng.uniform(-0.85, 0.85),
-                        self.rng.uniform(0.04, 0.13), self.rng.uniform(0, math.pi))
-                       for _ in range(34)]
         self.crowd = [(self.rng.uniform(0, 2 * math.pi), self.rng.uniform(1.06, 1.42),
                        self.rng.randint(2, 4)) for _ in range(900)]
 
@@ -107,18 +106,11 @@ class ArenaArt:
                 continue
             col = SAND_LT if tone > 0.62 else SAND_DK
             pygame.draw.circle(surf, col, (int(c + gx * r), int(c + gy * r)), gr)
-        for sx, sy, sr, ang in self.scuffs:
-            rect = pygame.Rect(0, 0, int(sr * r * 2.4), int(sr * r * 0.7))
-            patch = pygame.Surface(rect.size, pygame.SRCALPHA)
-            pygame.draw.ellipse(patch, (*SCUFF, 90), patch.get_rect())
-            patch = pygame.transform.rotate(patch, math.degrees(ang))
-            surf.blit(patch, patch.get_rect(center=(int(c + sx * r), int(c + sy * r))))
-
         # inner lip and vignette
         pygame.draw.circle(surf, PODIUM_DK, (c, c), int(r), max(2, int(r * 0.012)))
         vig = pygame.Surface((size, size), pygame.SRCALPHA)
         for i in range(16):
-            a = int(8 * i)
+            a = int(5 * i)
             pygame.draw.circle(vig, (0, 0, 0, a), (c, c), int(r * (1 - i * 0.012)),
                                max(1, int(r * 0.02)))
         surf.blit(vig, (0, 0))
