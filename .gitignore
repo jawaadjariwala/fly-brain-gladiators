@@ -37,3 +37,7 @@ venv/
 
 # built artifacts
 *.partial
+
+# Generated match library — rebuild with scripts/export_matches.py
+web/data/*.fbg
+web/data/layout.bin

@@ -219,6 +219,11 @@ class Match:
         self.events: list[Event] = []
         self.frames: list[Frame] = []
         self.record_spikes = False
+        # Per-tick firing rates for the populations a viewer sees as meters.
+        # Computed from every spike, not from the sample the player draws.
+        self.record_meters = False
+        self.meters: list[list[list[float]]] = []
+        self._meter_pools: dict[int, list[np.ndarray]] = {}
         rng = np.random.default_rng(seed)
         # start facing each other, separated
         for f, sign in ((a, -1), (b, 1)):
@@ -226,6 +231,22 @@ class Match:
             f.heading = 0.0 if sign < 0 else math.pi
             f.health = START_HEALTH
             f.prev_x, f.prev_y = f.x, f.y      # no expansion on the first tick
+
+    def meter_pools(self, f: Fighter) -> list[np.ndarray]:
+        """Index sets behind the meters, in the order fbg.export.METERS lists."""
+        key = id(f)
+        if key not in self._meter_pools:
+            p, e = f.pools, f.eyes
+            self._meter_pools[key] = [
+                np.concatenate([e.loom_left, e.loom_right]),
+                p.giant_fiber,
+                np.concatenate([e.track_left, e.track_right]),
+                np.concatenate([p.dna02_left, p.dna02_right]),
+                np.concatenate([p.leg_left, p.leg_right]),
+                p.aggression,
+                p.dnp09,
+            ]
+        return self._meter_pools[key]
 
     # -- perception ---------------------------------------------------------
     def _see(self, self_f: Fighter, other: Fighter) -> tuple[float, float, float, float]:
@@ -334,13 +355,18 @@ class Match:
         for f in (self.a, self.b):
             f.prev_x, f.prev_y = f.x, f.y
 
-        actions, spikes = {}, {}
+        actions, spikes, rates = {}, {}, {}
         for f in (self.a, self.b):
             rec = f.net.run(TICK_MS)
             actions[f.name] = f.decoder(rec, TICK_MS)
             if self.record_spikes:
                 spikes[f.name] = (np.concatenate(rec.indices) if rec.indices
                                   else np.array([], np.int32))
+            if self.record_meters:
+                rates[f.name] = [float(rec.rate_of(idx, f.net.n)) if len(idx) else 0.0
+                                 for idx in self.meter_pools(f)]
+        if self.record_meters:
+            self.meters.append([rates[self.a.name], rates[self.b.name]])
 
         for me, you in ((self.a, self.b), (self.b, self.a)):
             self._apply(me, you, actions[me.name], *seen[me.name], t_ms)
