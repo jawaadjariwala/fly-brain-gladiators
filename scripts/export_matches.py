@@ -57,6 +57,33 @@ def neuron_groups(c, sub, index_map) -> np.ndarray:
     return g
 
 
+# What actually differs between two fighters, read off the profile. Every one
+# of these is a property of a nervous system — a neuromodulator level, a
+# sensory gain, a lesion — applied to the same connectome. Nothing is trained,
+# and this list is the whole of what makes them fight differently.
+TRAIT_LABELS = [
+    ("octopamine_gain", "octopamine ×{:g}", 1.0),
+    ("p1_drive", "P1 drive ×{:g}", 1.0),
+    ("tk_gain", "tachykinin ×{:g}", 1.0),
+    ("loom_gain", "loom gain ×{:g}", 1.0),
+    ("mechano_gain", "mechanosensation ×{:g}", 1.0),
+    ("gf_threshold", "escape threshold ×{:g}", 1.0),
+    ("dna02_gain", "steering ×{:g}", 1.0),
+    ("dnp09_gain", "stopping ×{:g}", 1.0),
+]
+
+
+def traits(profile) -> list[str]:
+    out = []
+    if profile.optic_gain == 0 or profile.lesions:
+        out.append("optic lobes lesioned")
+    for field, label, default in TRAIT_LABELS:
+        value = getattr(profile, field)
+        if value != default:
+            out.append(label.format(value))
+    return out or ["baseline — nothing altered"]
+
+
 def _reread(path: Path, a_name: str, b_name: str, seed: int) -> dict:
     """Index entry for a match already on disk, read from its own header."""
     blob = path.read_bytes()
@@ -68,16 +95,43 @@ def _reread(path: Path, a_name: str, b_name: str, seed: int) -> dict:
             "bytes": path.stat().st_size}
 
 
+def write_index(profiles: dict, matches: list[dict]) -> None:
+    """The manifest the player reads: who can fight, and what has been built."""
+    (OUT / "index.json").write_text(json.dumps({
+        "fighters": [{"name": p.name, "class": p.weapon_class, "seed": p.seed,
+                      "note": p.note, "traits": traits(p)}
+                     for p in sorted(profiles.values(), key=lambda p: p.name)],
+        "matches": matches,
+    }, indent=1))
+
+
+def rebuild_index() -> None:
+    """Rewrite index.json from the matches already on disk. No simulation."""
+    profiles = {p.name: p for p in load_all().values()}
+    matches = []
+    for path in sorted(OUT.glob("*.fbg")):
+        a, b, s = path.stem.split("__")
+        matches.append(_reread(path, a.upper(), b.upper(), int(s.lstrip("s"))))
+    write_index(profiles, matches)
+    print(f"index.json — {len(matches)} matches, {len(profiles)} fighters")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", type=int, default=3, help="seeds per matchup")
     ap.add_argument("--pair", nargs=2, metavar=("A", "B"))
     ap.add_argument("--rebuild", action="store_true",
                     help="re-simulate matches already on disk")
+    ap.add_argument("--index-only", action="store_true",
+                    help="rewrite index.json from what is on disk, no simulation")
     # Fights are watched in slow motion, so 20 s of simulated time is already a
     # long watch, and capping it bounds the file size.
     ap.add_argument("--max-s", type=float, default=20.0)
     args = ap.parse_args()
+
+    if args.index_only:
+        rebuild_index()
+        return
 
     print("loading connectome...")
     c = build()
@@ -128,11 +182,7 @@ def main() -> None:
                   f"{result['duration_s']:5.1f}s  {size/1e6:5.2f} MB  "
                   f"({time.perf_counter()-t0:.0f}s)")
 
-    (OUT / "index.json").write_text(json.dumps({
-        "fighters": [{"name": p.name, "class": p.weapon_class, "note": p.note}
-                     for p in sorted(profiles.values(), key=lambda p: p.name)],
-        "matches": index,
-    }, indent=1))
+    write_index(profiles, index)
     print(f"\n{len(index)} matches, {total/1e6:.1f} MB total, "
           f"{total/max(len(index),1)/1e6:.2f} MB each")
 

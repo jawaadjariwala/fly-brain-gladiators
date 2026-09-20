@@ -8,6 +8,7 @@
 import { loadMatch, loadIndex, loadLayout } from './match.js';
 import { Arena } from './arena.js';
 import { BrainPanel, GROUPS } from './brain.js';
+import { drawFly } from './sprite.js';
 
 const TINTS = [[90, 200, 226], [236, 104, 78]];
 const $ = sel => document.querySelector(sel);
@@ -222,26 +223,96 @@ requestAnimationFrame(now => { state.last = now; frame(now); });
 // the seeds built for that pair. Simulating a fresh one costs about twice real
 // time and needs the whole connectome resident, which is not something to do
 // per visitor.
-const library = { fighters: [], byPair: new Map() };
+const library = { fighters: [], matches: [], byPair: new Map() };
 let picked = [];
 
 const pairKey = (a, b) => [a, b].sort().join('|');
 
+// What each class actually carries, for the card subtitle.
+const LOADOUT = {
+  murmillo: 'gladius & scutum',
+  hoplomachus: 'hasta & parmula',
+  thraex: 'sica & parmula',
+};
+
+// Unpicked fighters are drawn in steel. Picking one shows it in the colour it
+// will actually be in the arena, so the card says which side you are taking.
+const NEUTRAL = [148, 160, 174];
+
+const portraits = [];
+
+function record(name) {
+  let w = 0, l = 0, d = 0;
+  for (const m of library.matches) {
+    if (m.a !== name && m.b !== name) continue;
+    if (m.winner === 'draw') d++;
+    else if (m.winner === name) w++;
+    else l++;
+  }
+  return { w, l, d, n: w + l + d };
+}
+
 function buildRoster() {
   els.roster.textContent = '';
+  portraits.length = 0;
   for (const f of library.fighters) {
     const card = document.createElement('button');
     card.className = 'card';
     card.type = 'button';
-    card.innerHTML = `<span class="n"></span><span class="c"></span>
-                      <span class="note"></span>`;
+    card.innerHTML = `<canvas class="portrait"></canvas>
+      <span class="n"></span><span class="c"></span>
+      <span class="note"></span><span class="traits"></span>
+      <span class="record"></span>`;
     card.querySelector('.n').textContent = f.name;
-    card.querySelector('.c').textContent = f.class;
+    card.querySelector('.c').textContent =
+      `${f.class} · ${LOADOUT[f.class] ?? ''}`;
     card.querySelector('.note').textContent = f.note ?? '';
+    for (const t of f.traits ?? []) {
+      const chip = document.createElement('span');
+      chip.textContent = t;
+      card.querySelector('.traits').append(chip);
+    }
+    const r = record(f.name);
+    card.querySelector('.record').textContent = r.n
+      ? `${r.w}W · ${r.l}L · ${r.d} drawn — ${r.n} matches built`
+      : 'no matches built yet';
     card.addEventListener('click', () => togglePick(f.name));
     els.roster.append(card);
+    portraits.push({ canvas: card.querySelector('.portrait'), fighter: f });
   }
   syncRoster();
+  requestAnimationFrame(drawPortraits);
+}
+
+// The cards show the actual animal, drawn by the same code the arena uses, so
+// the weapon and shield on the card are the ones it fights with.
+function drawPortraits(now) {
+  if (!els.picker.hidden) {
+    for (const p of portraits) {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      const r = p.canvas.getBoundingClientRect();
+      if (!r.width) continue;
+      if (p.canvas.width !== Math.round(r.width * dpr)) {
+        p.canvas.width = Math.round(r.width * dpr);
+        p.canvas.height = Math.round(r.height * dpr);
+      }
+      const ctx = p.canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, r.width, r.height);
+      const at = picked.indexOf(p.fighter.name);
+      // height 0 here: in the arena the sprite is lifted off the ground by
+      // its flight altitude, and on a portrait that lift carries the shield
+      // off the top of the card.
+      drawFly(ctx, {
+        x: r.width / 2, y: r.height * 0.58, heading: 0,
+        mm: Math.min(r.height * 0.33, 32),
+        tint: at >= 0 ? TINTS[at] : NEUTRAL,
+        state: 'idle', ms: now, weapon: p.fighter.class,
+        flash: 0, height: 0,
+      });
+    }
+  }
+  requestAnimationFrame(drawPortraits);
 }
 
 function togglePick(name) {
@@ -256,15 +327,26 @@ function syncRoster() {
   [...els.roster.children].forEach((card, i) => {
     const name = library.fighters[i].name;
     const at = picked.indexOf(name);
-    if (at >= 0) card.dataset.pick = String(at);
-    else delete card.dataset.pick;
-    const wouldPair = picked.length === 1 && picked[0] !== name
+    if (at >= 0) {
+      card.dataset.pick = String(at);
+      card.dataset.side = at === 0 ? 'BLUE' : 'RED';
+    } else {
+      delete card.dataset.pick;
+      delete card.dataset.side;
+    }
+    card.disabled = picked.length === 1 && picked[0] !== name
       && !library.byPair.has(pairKey(picked[0], name));
-    card.disabled = wouldPair;
   });
+
+  document.querySelectorAll('.matchup .slot').forEach((el, i) => {
+    el.innerHTML = picked[i] ? '' : `<em>${i === 0 ? 'choose a fighter' : 'and another'}</em>`;
+    if (picked[i]) el.textContent = picked[i];
+  });
+
   const ready = picked.length === 2 && library.byPair.has(pairKey(...picked));
   els.fight.disabled = !ready;
-  els.fight.textContent = ready ? `${picked[0]} vs ${picked[1]}`
+  els.fight.textContent = ready
+    ? `Fight — ${library.byPair.get(pairKey(...picked)).length} seeds built`
     : picked.length === 2 ? 'No match built for that pair'
     : 'Choose two fighters';
 }
@@ -296,6 +378,7 @@ els.newFight.addEventListener('click', showPicker);
 loadIndex()
   .then(ix => {
     library.fighters = ix.fighters;
+    library.matches = ix.matches;
     for (const m of ix.matches) {
       const k = pairKey(m.a, m.b);
       if (!library.byPair.has(k)) library.byPair.set(k, []);

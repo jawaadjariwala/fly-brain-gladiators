@@ -68,13 +68,36 @@
 </main>
 
 <div id="picker" class="picker">
-  <h1>Fly Brain Gladiators</h1>
-  <p class="blurb">Two gladiators, both run by the real fruit fly
-    connectome — 166,700 neurons, nothing trained. Pick a pair.</p>
-  <div class="roster" id="roster"></div>
-  <div class="picker-actions">
-    <button id="fight" class="fight" disabled>Choose two fighters</button>
-    <button id="randomPick" class="ghost">Surprise me</button>
+  <div class="picker-inner">
+    <header class="hero">
+      <p class="eyebrow">166,700 neurons · nothing trained</p>
+      <h1>Fly&nbsp;Brain Gladiators</h1>
+      <p class="blurb">Both fighters run on the real fruit fly connectome. Nothing is
+        trained — no reward function, no learned policy. They differ only as two
+        nervous systems differ: a neuromodulator level, a sensory gain, a lesion.</p>
+    </header>
+
+    <div class="roster" id="roster"></div>
+
+    <div class="matchup" id="matchup">
+      <span class="slot" data-slot="0"><em>choose a fighter</em></span>
+      <span class="vs">✕</span>
+      <span class="slot" data-slot="1"><em>and another</em></span>
+    </div>
+
+    <div class="picker-actions">
+      <button id="fight" class="fight" disabled>Choose two fighters</button>
+      <button id="randomPick" class="ghost">Surprise me</button>
+    </div>
+
+    <footer class="provenance">
+      <p>Connectome: <strong>MaleCNS v1.0</strong> — HHMI Janelia FlyEM with
+        Google Research, the University of Cambridge and MRC LMB (2026),
+        CC&#8209;BY. Simulation parameters follow Shiu et al., <em>Nature</em> (2024).</p>
+      <p>Matches are pre-computed and deterministic: every one can be re-run
+        from its seed. <a href="https://github.com/jawaadjariwala/fly-brain-gladiators"
+        target="_blank" rel="noopener">Source and method →</a></p>
+    </footer>
   </div>
 </div>
 
