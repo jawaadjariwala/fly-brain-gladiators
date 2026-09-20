@@ -42,7 +42,7 @@ const sound = new Sound();
 // has to be driven off the tick the player is showing, not off wall clock.
 let soundCursor = 0;
 
-const state = { match: null, t: 0, playing: true, speed: 0.5, last: 0, tints: [] };
+const state = { match: null, t: 0, playing: true, speed: 1, last: 0, tints: [] };
 let arena = null;
 let brain = null;                 // one BrainPanel, drawn into both canvases
 let meterCeilings = null;
