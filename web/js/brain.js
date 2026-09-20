@@ -35,6 +35,28 @@ const DRIVEN = [
   { group: 7, meter: 3, ceiling: 50 },   // steering    <- DNa02
 ];
 
+// One soft dot, drawn once and stamped for every neuron. Peak alpha is low on
+// purpose: where the anatomy is dense the stamps overlap and accumulate into a
+// solid volume, and where it is sparse they stay a faint haze. That is what
+// makes the optic lobes read as two bright masses and the neuropils show
+// through — the depth is recovered from how many cells project to the same
+// point, not from a depth coordinate, which the flattened layout does not
+// carry.
+function cloudDot(radius) {
+  const size = Math.ceil(radius * 2) + 2;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  const m = size / 2;
+  const grad = g.createRadialGradient(m, m, 0, m, m, m);
+  grad.addColorStop(0, 'rgba(176,200,226,0.115)');
+  grad.addColorStop(0.45, 'rgba(150,174,202,0.055)');
+  grad.addColorStop(1, 'rgba(118,143,174,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, size, size);
+  return c;
+}
+
 function glowSprite(color, radius) {
   const size = Math.ceil(radius * 6);
   const c = document.createElement('canvas');
@@ -82,7 +104,8 @@ export class BrainPanel {
       }
       xs.sort((a, b) => a - b); ys.sort((a, b) => a - b);
       const q = (arr, f) => arr[Math.min(arr.length - 1, Math.floor(f * arr.length))];
-      const b = { x0: q(xs, 0.01), x1: q(xs, 0.99), y0: q(ys, 0.01), y1: q(ys, 0.99) };
+      const b = { x0: q(xs, 0.005), x1: q(xs, 0.995),
+                  y0: q(ys, 0.005), y1: q(ys, 0.995) };
       this.bounds.push(b);
       // x and y were normalised independently, so the true proportions live in
       // the header; trimming scales them by however much was trimmed off each.
@@ -97,8 +120,11 @@ export class BrainPanel {
   // pair is scaled to fit and centred.
   layoutFor(w, h) {
     const pad = 8, gap = 10;
-    const innerH = h - pad * 2;
-    const innerW = w - pad * 2 - gap;
+    // Leave air around the anatomy. Filling the panel edge to edge makes it
+    // read as a cropped texture rather than as a specimen.
+    const FILL = 0.80;
+    const innerH = (h - pad * 2) * FILL;
+    const innerW = (w - pad * 2 - gap) * FILL;
     let ph = innerH;
     let bw = ph * this.aspect[0];
     let cw = ph * this.aspect[1];
@@ -106,8 +132,8 @@ export class BrainPanel {
       const k = innerW / (bw + cw);
       ph *= k; bw *= k; cw *= k;
     }
-    const x0 = pad + (innerW - bw - cw) / 2;
-    const y0 = pad + (innerH - ph) / 2;
+    const x0 = (w - bw - gap - cw) / 2;
+    const y0 = (h - ph) / 2;
     return {
       brain: { x: x0, y: y0, w: bw, h: ph },
       cord: { x: x0 + bw + gap, y: y0, w: cw, h: ph },
@@ -120,23 +146,29 @@ export class BrainPanel {
     const r = p === 0 ? rects.brain : p === 1 ? rects.cord : null;
     if (!r) return null;
     const b = this.bounds[p];
-    const u = Math.min(1, Math.max(0, (x[i] - b.x0) / (b.x1 - b.x0)));
-    const v = Math.min(1, Math.max(0, (y[i] - b.y0) / (b.y1 - b.y0)));
+    const u = (x[i] - b.x0) / (b.x1 - b.x0);
+    const v = (y[i] - b.y0) / (b.y1 - b.y0);
+    // Outside the trimmed frame it is dropped, not clamped. Clamping stacks
+    // every outlier on the border and draws a hard line around the anatomy.
+    if (u < 0 || u > 1 || v < 0 || v > 1) return null;
     return [r.x + u * r.w, r.y + (1 - v) * r.h];
   }
 
-  // The faint anatomy never changes, so it is drawn once per size and blitted.
+  // The anatomy never changes, so it is drawn once per size and blitted. Every
+  // neuron goes in — not every other one — because the accumulation is the
+  // picture.
   buildStatic(w, h, dpr) {
     const rects = this.layoutFor(w, h);
     const c = document.createElement('canvas');
     c.width = Math.ceil(w * dpr); c.height = Math.ceil(h * dpr);
     const g = c.getContext('2d');
     g.scale(dpr, dpr);
-    g.fillStyle = '#242c37';
+    const dot = cloudDot(2.1);
+    const half = dot.width / 2;
     const { part } = this.layout;
-    for (let i = 0; i < part.length; i += 2) {
+    for (let i = 0; i < part.length; i++) {
       const p = this.place(i, rects);
-      if (p) g.fillRect(p[0], p[1], 1, 1);
+      if (p) g.drawImage(dot, p[0] - half, p[1] - half);
     }
     this.static = c;
     this.rects = rects;
