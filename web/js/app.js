@@ -2,7 +2,7 @@
 //
 // Playback time is tracked separately from frame time and advanced by a capped
 // delta, so a slow frame shows the same instant twice rather than skipping the
-// fight forward — a jump in position reads as a teleport, not as a dropped
+// fight forward, a jump in position reads as a teleport, not as a dropped
 // frame.
 
 import { loadMatch, loadIndex, loadLayout } from './match.js';
@@ -66,8 +66,7 @@ function fitPanel(c) {
 }
 
 let view = fitCanvas();
-let resizes = 0;
-new ResizeObserver(() => { resizes++; view = fitCanvas(); }).observe(canvas.parentElement);
+new ResizeObserver(() => { view = fitCanvas(); }).observe(canvas.parentElement);
 brainCanvases.forEach(c => {
   fitPanel(c);
   new ResizeObserver(() => fitPanel(c)).observe(c.el.parentElement);
@@ -251,16 +250,16 @@ addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft') { state.t = Math.max(0, state.t - step); render(); }
 });
 
-// Debug hook, for checking the player from the console.
+// Inspection handle, for checking the player from the console. `time()` returns
+// the average cost of a frame in milliseconds, which is the number to watch if
+// anything ever feels slow.
 window.__fbg = {
-  state, render,
+  state, render, countIn,
   get arena() { return arena; },
   get brain() { return brain; },
   get sound() { return sound; },
-  countIn,
   get panels() { return brainCanvases; },
   get view() { return view; },
-  get resizes() { return resizes; },
   time(n = 30) {
     const t0 = performance.now();
     for (let i = 0; i < n; i++) render();

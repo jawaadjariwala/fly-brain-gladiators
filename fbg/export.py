@@ -5,7 +5,7 @@ resident, so it cannot happen per viewer. A match as data is small: body state
 is a few kilobytes, and the spikes compress to a few hundred more. Matches are
 built ahead of time and the player just reads them.
 
-File layout — one binary, little-endian throughout:
+File layout: one binary, little-endian throughout:
 
     u32          length of the JSON header, in bytes
     utf-8        JSON header (fighters, weapons, seed, result, array offsets),
@@ -49,7 +49,7 @@ METERS = [
 # What the panel gets is the set of neurons active in a tick, thinned.
 #
 # A 20 ms window holds ~1,850 spikes per fighter but only ~1,321 distinct
-# neurons — a neuron clears its 2.2 ms refractory several times over — and the
+# neurons, a neuron clears its 2.2 ms refractory several times over, and the
 # panel draws a set, so the repeats are worth nothing. Deduplicate, then keep
 # every 6th, which leaves ~220 points per fighter per tick.
 #
@@ -153,8 +153,8 @@ def write_layout(path: Path, positions: np.ndarray, known: np.ndarray,
                  groups: np.ndarray, group_names: list[str]) -> dict:
     """Write the shared neuron layout: where each cell is drawn, and its type.
 
-    Positions are flattened to the same two axes the anatomical renders use —
-    x across the body, -z up — and normalised into [0, 1]. Brain and nerve cord
+    Positions are flattened to the same two axes the anatomical renders use: 
+    x across the body, -z up, and normalised into [0, 1]. Brain and nerve cord
     are normalised separately so the cord is not squashed into a sliver: the
     cord is far narrower than the brain, and a single extent makes it
     unreadable.

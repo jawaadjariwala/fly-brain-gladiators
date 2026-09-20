@@ -22,7 +22,7 @@ import pygame
 from fbg.arena import ARENA_RADIUS
 
 # Sand is dark and close to flat, with fine grit for texture. A bright floor
-# with broad scuff marks washes the fighters out — they are small, and the
+# with broad scuff marks washes the fighters out, they are small, and the
 # contrast between them and the ground is what makes the fight readable.
 SAND = (72, 61, 48)
 SAND_DK = (58, 49, 39)

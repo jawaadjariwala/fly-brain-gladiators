@@ -1,7 +1,7 @@
 """Build fighters from profiles.
 
 A profile is data, not weights. Every knob is a property of the nervous
-system — a neuromodulator level, a lesion, a sensory gain — applied to an
+system, a neuromodulator level, a lesion, a sensory gain, applied to an
 otherwise identical connectome. Nothing is trained.
 """
 
@@ -114,7 +114,7 @@ def build_fighter(profile: Profile, full: Connectome, sub: Connectome,
     net = Network(graph, Params(), seed=profile.seed)
     net.reset()
 
-    # Baseline locomotor drive — flies walk spontaneously, and without a
+    # Baseline locomotor drive: flies walk spontaneously, and without a
     # standing descending tone the fighters never move at all.
     #
     # It deliberately skips the four command populations the decoder reads.
@@ -132,7 +132,7 @@ def build_fighter(profile: Profile, full: Connectome, sub: Connectome,
     net.add_tonic("locomotor", dn_idx, arena.BASELINE_LOCOMOTOR_HZ)
 
     # octopamine: tonic drive to the octopaminergic population (METHODS 3.2,
-    # option A — the connectome's own wiring carries the effect)
+    # option A, the connectome's own wiring carries the effect)
     oct_idx = np.array([index_map[i] for i in seeds.octopaminergic
                         if i in index_map], dtype=np.int32)
     if profile.octopamine_gain != 1.0 and len(oct_idx):

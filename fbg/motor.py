@@ -1,4 +1,4 @@
-"""Motor decoding — descending and motor neuron activity to arena actions.
+"""Motor decoding: descending and motor neuron activity to arena actions.
 
 ⚠️ THIS MAPPING IS FIXED AND MUST NOT BE TUNED TO OUTCOMES.
 
@@ -16,11 +16,11 @@ Anatomical basis
 ----------------
 DNa02      steering; drives an ipsilateral turn, so the left/right firing
            asymmetry sets turn direction
-DNp01      the giant fiber — one spike is a full escape command
+DNp01      the giant fiber: one spike is a full escape command
 DNp09      drives stopping and freezing
 fl/ml/hl   front, middle and hind leg motor neurons, split by side
-wm         wing motor neurons — takeoff and flight
-nm         neck motor neurons — head movement
+wm         wing motor neurons: takeoff and flight
+nm         neck motor neurons: head movement
 pC1        male-specific aggression population (P1 is a subset of pC1)
 """
 
@@ -43,7 +43,7 @@ from fbg.data import SOURCES
 # that flinches permanently.
 #
 # Instead the threshold is anchored to the angular size at which real flies
-# initiate escape — roughly 10-65 degrees, most commonly 20-40. Measured GF rate
+# initiate escape: roughly 10-65 degrees, most commonly 20-40. Measured GF rate
 # rises monotonically with loom drive (0 Hz at 0.5 Hz drive to 275 Hz at 22 Hz),
 # and 125 Hz corresponds to an object about 21 mm away, which for a 5 mm object
 # is ~27 degrees. That sits inside the documented window.
@@ -57,7 +57,7 @@ TURN_DEADZONE = 0.08         # |asymmetry| below this reads as straight ahead
 # DNa02 is one neuron per side and fires at about 2 Hz under visual drive, so
 # a 20 ms window contains a spike 4% of the time. The asymmetry computed from
 # a single window is therefore almost always exactly zero, and occasionally
-# +-1 — and averaging THAT throws the magnitude away and leaves a mean far
+# +-1, and averaging THAT throws the magnitude away and leaves a mean far
 # below the deadzone, which is why a fighter reading it tick by tick never
 # turns at all. Averaging the rates first and taking the asymmetry of the
 # estimates is both the correct estimator and what a downstream neuron
@@ -97,8 +97,8 @@ class Action:
     # `turn` to the heading, and bearings, which are positive to the left.
     turn: float = 0.0        # -1 full right … +1 full left
     advance: float = 0.0     # 0 … 1 forward drive
-    dodge: bool = False      # giant fiber fired — escape jump
-    guard: bool = False      # DNp09 dominant — hold position
+    dodge: bool = False      # giant fiber fired: escape jump
+    guard: bool = False      # DNp09 dominant: hold position
     attack: bool = False     # aggression circuit above threshold
 
     def __repr__(self) -> str:
@@ -156,7 +156,7 @@ def _count(record, idx: np.ndarray) -> int:
 class Decoder:
     """Stateful motor readout.
 
-    Holds only the escape refractory — a physical constraint on the body, not a
+    Holds only the escape refractory, a physical constraint on the body, not a
     tunable parameter. Everything else is a pure function of the spike rates.
     """
 
@@ -164,7 +164,7 @@ class Decoder:
                  giant_fiber_hz: float = GIANT_FIBER_HZ) -> None:
         self.pools = pools
         self.n = n_neurons
-        # A fighter profile may scale this — that is a property of its nervous
+        # A fighter profile may scale this, that is a property of its nervous
         # system (how readily its escape neuron fires), not a tuned parameter.
         self.giant_fiber_hz = giant_fiber_hz
         self.ms_since_escape = ESCAPE_REFRACTORY_MS
@@ -196,7 +196,7 @@ def decode(record, pools: Pools, n_neurons: int,
     """Actions other than escape. Pure function of the rates.
 
     `steering` supplies the DNa02 left/right and leg left/right rates when the
-    caller has a better estimate of them than a single window gives — see
+    caller has a better estimate of them than a single window gives: see
     STEER_TAU_MS. Without it they are read from this window alone.
     """
     guard = _rate(record, pools.dnp09, n_neurons) >= GUARD_HZ
@@ -205,8 +205,8 @@ def decode(record, pools: Pools, n_neurons: int,
     # Steering: descending asymmetry first, leg asymmetry as support.
     #
     # Both terms are ordered by anatomy, not by what makes a fighter win.
-    # DNa02 drives an IPSILATERAL turn — the left-hand neuron steers the fly
-    # left — so left-minus-right is the term that points the fighter at what
+    # DNa02 drives an IPSILATERAL turn, the left-hand neuron steers the fly
+    # left, so left-minus-right is the term that points the fighter at what
     # its left eye is tracking. The legs are the other way round: a fly turning
     # left takes longer steps on the outside, so it is right-minus-left there.
     if steering is None:

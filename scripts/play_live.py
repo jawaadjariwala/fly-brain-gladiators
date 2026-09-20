@@ -59,7 +59,7 @@ def main():
     match.record_spikes = True
     result = match.run()
     frames = match.frames
-    print(f"  {result['winner']} — {result['duration_s']:.1f}s simulated "
+    print(f"  {result['winner']}: {result['duration_s']:.1f}s simulated "
           f"in {time.perf_counter()-t0:.0f}s wall, {len(frames)} ticks")
     hits = {e.tick for e in match.events if e.kind == "hit"}
 
@@ -72,7 +72,7 @@ def main():
 
     pygame.init()
     # Fit the window to the display. A fixed 600x1066 is taller than a 13"
-    # laptop screen, and the part that goes off the top is the HUD — the names
+    # laptop screen, and the part that goes off the top is the HUD, the names
     # and health bars sit in the first 130 px of the scene.
     try:
         avail_h = pygame.display.Info().current_h
@@ -81,7 +81,7 @@ def main():
     win_h = max(480, min(1000, int(avail_h * 0.82)))
     win_w = int(round(win_h * SCENE_ASPECT))
     screen = pygame.display.set_mode((win_w, win_h), pygame.RESIZABLE)
-    pygame.display.set_caption(f"Fly Brain Gladiators — {a_name} vs {b_name}")
+    pygame.display.set_caption(f"Fly Brain Gladiators: {a_name} vs {b_name}")
     scene = pygame.Surface((W, H))
     clock = pygame.time.Clock()
 
@@ -144,7 +144,7 @@ def main():
                 elif ev.key == pygame.K_s:
                     # Request it, don't take it here: events are handled before
                     # the frame is drawn, so saving now writes whatever the
-                    # scene held last tick — and on the first pass through the
+                    # scene held last tick, and on the first pass through the
                     # loop that is an untouched surface, which is solid black.
                     want_shot = True
 

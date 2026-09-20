@@ -6,7 +6,7 @@ Two layouts:
 
 
 The top panel shows what the fly sees. The bottom panels show its brain and
-nerve cord. The link is causal, not decorative — the object's angular expansion
+nerve cord. The link is causal, not decorative, the object's angular expansion
 rate sets the loom-detector firing rate each tick, and the simulation is
 advanced in slices with membrane state carried across them. That is the same
 loop the arena will use.
@@ -186,9 +186,9 @@ def main():
         fig.text(bar_x, bar_y - 0.021, f"loom detector drive  {rate_hz[f]:4.1f} Hz",
                  color="#7a8894", fontsize=8.5)
 
-        legend = [("loom", "loom detectors — in the eyes"),
-                  ("descending", "descending neurons — brain to body"),
-                  ("motor", "motor neurons — drive muscle"),
+        legend = [("loom", "loom detectors: in the eyes"),
+                  ("descending", "descending neurons: brain to body"),
+                  ("motor", "motor neurons: drive muscle"),
                   ("other", "everything else")]
         for i, (r, lbl) in enumerate(legend):
             yy = 0.050 - i * 0.0145

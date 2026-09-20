@@ -1,4 +1,4 @@
-# Connectome data — ~1.1 GB raw, ~205 MB matrix. NEVER commit.
+# Connectome data: ~1.1 GB raw, ~205 MB matrix. NEVER commit.
 # Rooted: an unanchored `data/` also matches web/data/, which ships.
 /data/
 *.npz
@@ -18,7 +18,7 @@ clips/
 *.gif
 !docs/**/*.gif
 
-# Match results — keep summaries, not raw spike dumps
+# Match results: keep summaries, not raw spike dumps
 runs/**/spikes/
 runs/**/raw/
 
@@ -39,7 +39,7 @@ venv/
 # built artifacts
 *.partial
 
-# The match library IS the site's content — it ships. Rebuild it with
+# The match library IS the site's content, it ships. Rebuild it with
 # scripts/export_matches.py; it is regenerable, but the published player
 # needs it present.
 # Two matches from an early test run, written before pair slugs were ordered

@@ -56,8 +56,8 @@ export async function loadMatch(url) {
   // Read the track into something a renderer can draw directly: a position per
   // tick per fighter, plus an altitude, because these are flying animals.
   //
-  // A dodge is applied to the body in one tick — the giant fiber is a command
-  // neuron and the escape is instantaneous — which drawn literally is a
+  // A dodge is applied to the body in one tick, the giant fiber is a command
+  // neuron and the escape is instantaneous, which drawn literally is a
   // teleport. The jump is real, so it is drawn as a jump: the displacement is
   // spread over the dodge's animation and carried on an arc.
   const DODGE = h.states.indexOf('dodge');

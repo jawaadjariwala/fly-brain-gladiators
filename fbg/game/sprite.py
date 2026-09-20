@@ -85,7 +85,7 @@ class FlySprite:
             rot = pygame.transform.rotate(w, -sgn * (16 + 20 * open_))
             surf.blit(rot, rot.get_rect(center=(CX, CY)))
 
-        # legs — three per side, thin and bristled
+        # legs: three per side, thin and bristled
         for i, (lx, ly) in enumerate(((16, 12), (0, 15), (-16, 13))):
             for sgn in (-1, 1):
                 sw = ph * (5.5 if i % 2 == 0 else -5.5) * sgn
@@ -94,7 +94,7 @@ class FlySprite:
                 foot = (CX + lx + sw, CY + sgn * (ly + 23) * crouch)
                 pygame.draw.lines(surf, BRISTLE, False, [root, knee, foot], 2)
 
-        # abdomen — striped oval at the back
+        # abdomen: striped oval at the back
         ab = pygame.Rect(0, 0, 54, 34); ab.center = (CX - 30, CY)
         pygame.draw.ellipse(surf, CHITIN, ab)
         for k in range(3):

@@ -2,7 +2,7 @@
 // up as it fires.
 //
 // Two things are drawn from two different sources, which is worth being clear
-// about. The cloud is the spike sample in the match file — one neuron in six,
+// about. The cloud is the spike sample in the match file: one neuron in six,
 // enough to show the shape of the activity. The named populations are driven
 // by the recorded firing rates, which are computed from every spike. That
 // matters for the small ones: DNp01 is two neurons, and one in six of two is
@@ -13,13 +13,13 @@ const TAU = Math.PI * 2;
 
 export const GROUPS = [
   { key: 'other',       label: 'everything else',        color: '#5c6a78', r: 1.0 },
-  { key: 'loom',        label: 'looming — LC4/LPLC2',    color: '#3fd0e3', r: 2.4 },
-  { key: 'tracking',    label: 'tracking — LC10a',       color: '#6ee7a5', r: 2.4 },
-  { key: 'aggression',  label: 'aggression — pC1',       color: '#ff5e8a', r: 2.6 },
-  { key: 'descending',  label: 'descending — to the body', color: '#ffb03a', r: 2.2 },
-  { key: 'motor',       label: 'motor — drive muscle',   color: '#ff5555', r: 2.2 },
-  { key: 'giant fiber', label: 'giant fiber — DNp01',    color: '#ffffff', r: 3.0 },
-  { key: 'steering',    label: 'steering — DNa02',       color: '#b388ff', r: 2.8 },
+  { key: 'loom',        label: 'looming · LC4/LPLC2',    color: '#3fd0e3', r: 2.4 },
+  { key: 'tracking',    label: 'tracking · LC10a',       color: '#6ee7a5', r: 2.4 },
+  { key: 'aggression',  label: 'aggression · pC1',       color: '#ff5e8a', r: 2.6 },
+  { key: 'descending',  label: 'descending · to the body', color: '#ffb03a', r: 2.2 },
+  { key: 'motor',       label: 'motor · drive muscle',   color: '#ff5555', r: 2.2 },
+  { key: 'giant fiber', label: 'giant fiber · DNp01',    color: '#ffffff', r: 3.0 },
+  { key: 'steering',    label: 'steering · DNa02',       color: '#b388ff', r: 2.8 },
 ];
 
 // Which recorded rate lights which population, and the rate that counts as
@@ -29,7 +29,7 @@ export const GROUPS = [
 // Only the populations too small to survive the spike sample are here. DNp01
 // is two neurons and DNa02 is two, so one in six of them is usually none and
 // they would never appear otherwise. pC1 has 156 and the sample shows it on
-// its own — drawing all 156 with a glow apiece just makes a smear.
+// its own: drawing all 156 with a glow apiece just makes a smear.
 const DRIVEN = [
   { group: 6, meter: 1, ceiling: 75 },   // giant fiber <- DNp01
   { group: 7, meter: 3, ceiling: 50 },   // steering    <- DNa02
@@ -39,7 +39,7 @@ const DRIVEN = [
 // purpose: where the anatomy is dense the stamps overlap and accumulate into a
 // solid volume, and where it is sparse they stay a faint haze. That is what
 // makes the optic lobes read as two bright masses and the neuropils show
-// through — the depth is recovered from how many cells project to the same
+// through, the depth is recovered from how many cells project to the same
 // point, not from a depth coordinate, which the flattened layout does not
 // carry.
 function cloudDot(radius) {
@@ -92,7 +92,7 @@ export class BrainPanel {
     // Frame each part on the body of its cells rather than on its outliers.
     // The stored coordinates are normalised over the full extent, and a few
     // distant somata stretch that until the dense anatomy floats in the middle
-    // of a mostly empty box — which reads as the drawing sitting off to one
+    // of a mostly empty box, which reads as the drawing sitting off to one
     // side. Trimming to the 1st-99th percentile lets it fill the frame.
     this.bounds = [];
     this.aspect = [];
@@ -155,7 +155,7 @@ export class BrainPanel {
   }
 
   // The anatomy never changes, so it is drawn once per size and blitted. Every
-  // neuron goes in — not every other one — because the accumulation is the
+  // neuron goes in, not every other one, because the accumulation is the
   // picture.
   buildStatic(w, h, dpr) {
     const rects = this.layoutFor(w, h);
@@ -199,7 +199,7 @@ export class BrainPanel {
     }
 
     // The small named populations, from the recorded rates rather than the
-    // sample — see the note at the top of this file.
+    // sample: see the note at the top of this file.
     for (const d of DRIVEN) {
       const level = Math.min(1, meters[d.meter] / d.ceiling);
       if (level <= 0.02) continue;

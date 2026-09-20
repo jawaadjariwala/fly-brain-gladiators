@@ -11,7 +11,7 @@
 }
 * { box-sizing: border-box; }
 /* .loading and .verdict set display, which beats the browser's own
-   [hidden] { display: none } — without this they never actually hide. */
+   [hidden] { display: none }, so without this they never actually hide. */
 [hidden] { display: none !important; }
 html, body { height: 100%; }
 body {
@@ -81,7 +81,7 @@ body {
   color: var(--muted);
 }
 /* The right-hand fighter is the same card mirrored. It swaps name and class in
-   the markup rather than with `order`, because `order` only moved those two —
+   the markup rather than with `order`, because `order` only moved those two.
    the bar and the health number kept the default 0 and jumped above the name,
    which is what put the two bars on different lines. */
 .fighter.right { text-align: right; grid-template-columns: auto 1fr; }

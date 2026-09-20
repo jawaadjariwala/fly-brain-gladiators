@@ -94,7 +94,7 @@ def main():
         mean, _ = measure(net, sub, rate, {"gf": gf}, trials=1)["gf"]
         print(f"  {rate:>4} Hz × {frac:>5.0%}  {mean:>8.1f} Hz")
 
-    print("\n── TEST 3: control — same stimulus, shuffled wiring ──")
+    print("\n── TEST 3: control: same stimulus, shuffled wiring ──")
     net2 = Network(shuffled(c), Params())
     real, _ = measure(net, loom, 20.0, {"gf": gf})["gf"]
     fake, _ = measure(net2, loom, 20.0, {"gf": gf})["gf"]

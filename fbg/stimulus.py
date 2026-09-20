@@ -3,9 +3,9 @@
 Two channels, because the fly has two that matter here. Looming detectors
 (LC4, LPLC2, LC6) fire when an object expands towards the animal, and drive
 escape. Target trackers (LC10a) follow a small moving object and drive
-pursuit — they are what a male uses to steer after another fly.
+pursuit, they are what a male uses to steer after another fly.
 
-Looming stimulus — an object approaching on a collision course.
+Looming stimulus: an object approaching on a collision course.
 
 The fly's loom detectors (LC4, LPLC2) respond to angular expansion, not to
 distance. An object of radius r at distance d subtends
@@ -84,7 +84,7 @@ def expansion_to_rate(theta: np.ndarray, dt_s: float) -> np.ndarray:
 
 
 # --- target tracking --------------------------------------------------------
-# LC10a units have small receptive fields — the population is tuned to a small
+# LC10a units have small receptive fields, the population is tuned to a small
 # moving object, not to a whole-field expansion. So a fly-sized target fills a
 # useful fraction of the tuned population from much further away than it fills
 # the looming detectors, and TRACK_FIELD_DEG is correspondingly small.
@@ -92,7 +92,7 @@ TRACK_FIELD_DEG = 12.0
 TRACK_HZ = 20.0
 # A fly's compound eyes cover roughly 270-300 degrees horizontally, leaving a
 # blind wedge directly behind it. A target inside that wedge is not seen at
-# all — which is why overshooting a turn is expensive.
+# all, which is why overshooting a turn is expensive.
 REAR_BLIND_DEG = 80.0
 
 

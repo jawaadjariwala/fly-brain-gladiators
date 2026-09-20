@@ -58,8 +58,8 @@ def neuron_groups(c, sub, index_map) -> np.ndarray:
 
 
 # What actually differs between two fighters, read off the profile. Every one
-# of these is a property of a nervous system — a neuromodulator level, a
-# sensory gain, a lesion — applied to the same connectome. Nothing is trained,
+# of these is a property of a nervous system, a neuromodulator level, a
+# sensory gain, a lesion: applied to the same connectome. Nothing is trained,
 # and this list is the whole of what makes them fight differently.
 TRAIT_LABELS = [
     ("octopamine_gain", "octopamine ×{:g}", 1.0),
@@ -81,7 +81,7 @@ def traits(profile) -> list[str]:
         value = getattr(profile, field)
         if value != default:
             out.append(label.format(value))
-    return out or ["baseline — nothing altered"]
+    return out or ["baseline: nothing altered"]
 
 
 def _reread(path: Path, a_name: str, b_name: str, seed: int) -> dict:
@@ -101,7 +101,7 @@ def write_index(profiles: dict, matches: list[dict]) -> None:
         "fighters": [{"name": p.name, "class": p.weapon_class, "seed": p.seed,
                       "note": p.note, "traits": traits(p),
                       # The raw knobs as well as the readable list, so a
-                      # renderer can show a difference rather than print it —
+                      # renderer can show a difference rather than print it: 
                       # a fighter with its optic lobes gone should look blind.
                       "profile": {"octopamine": p.octopamine_gain,
                                   "loom": p.loom_gain, "optic": p.optic_gain,
@@ -125,7 +125,7 @@ def rebuild_index() -> None:
             continue
         matches.append(_reread(path, a.upper(), b.upper(), int(s.lstrip("s"))))
     write_index(profiles, matches)
-    print(f"index.json — {len(matches)} matches, {len(profiles)} fighters")
+    print(f"index.json: {len(matches)} matches, {len(profiles)} fighters")
 
 
 def main() -> None:

@@ -35,7 +35,7 @@ class Params:
     tau_syn: float = 5.0       # synaptic time constant   (Jürgensen et al. 2021)
     t_refractory: float = 2.2  # refractory period        (Lazar et al. 2021)
     t_delay: float = 1.8       # transmission delay       (Paul et al. 2015)
-    w_syn: float = 0.275       # weight per synapse — FREE PARAMETER, fitted
+    w_syn: float = 0.275       # weight per synapse. FREE PARAMETER, fitted
     dt: float = 0.1            # integration timestep
 
     @property
@@ -116,7 +116,7 @@ class Network:
     # Two classes of channel. Sensory channels change every tick as the world
     # changes; tonic channels are a standing drive used for neuromodulation,
     # which in the fly acts continuously rather than as a stimulus. Both are
-    # named, so several can coexist — a fly has more than one sense, and more
+    # named, so several can coexist, a fly has more than one sense, and more
     # than one visual pathway.
     def set_poisson(self, indices: np.ndarray, rate_hz: float,
                     channel: str = "sensory") -> None:
@@ -176,7 +176,7 @@ class Network:
             self.g += self.delay_buf[slot]
             self.delay_buf[slot] = 0.0
 
-            # 2. integrate — v chases (v_rest + g), g decays
+            # 2. integrate: v chases (v_rest + g), g decays
             target = p.v_rest + self.g
             self.v = target + (self.v - target) * self.decay_v
             self.g *= self.decay_g

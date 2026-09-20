@@ -2,7 +2,7 @@
 //
 // The camera does not move. The whole ring is on screen at all times, so the
 // floor is drawn once into an offscreen canvas at the scale it will be shown
-// at and then blitted — it is the same picture on every frame, and rebuilding
+// at and then blitted, it is the same picture on every frame, and rebuilding
 // it per frame is what made the desktop viewer stutter.
 
 import { drawFly, drawShadow, flyHeight } from './sprite.js';

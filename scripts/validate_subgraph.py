@@ -92,7 +92,7 @@ def main():
     print("─" * 60)
     print(f"{'speed':<14} {fs:>10.2f} s/bs  {ss:>10.2f} s/bs {fs/ss:>8.1f}× faster")
     print(f"\n{'PASS' if ok else 'REVIEW'}: readouts "
-          f"{'agree within 10%' if ok else 'differ by more than 10% — subgraph too aggressive'}")
+          f"{'agree within 10%' if ok else 'differ by more than 10%: subgraph too aggressive'}")
 
 
 if __name__ == "__main__":

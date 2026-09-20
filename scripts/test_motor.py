@@ -63,12 +63,12 @@ def main():
             print(f"  {dist[i]:>5.0f}mm {np.degrees(theta[i]):>5.1f}° {hz:>6.1f}Hz "
                   f"{100*fracs[i]:>6.0f}%  {a}{mark}")
     if first is not None:
-        print(f"\n  first dodge at {dist[first]:.0f} mm — "
+        print(f"\n  first dodge at {dist[first]:.0f} mm: "
               f"{np.degrees(theta[first]):.0f}° angular size, "
               f"{100*fracs[first]:.0f}% of detectors recruited")
         print("  (real flies initiate escape at roughly 20-40°)")
     else:
-        print("\n  never dodged — check the giant fiber pool")
+        print("\n  never dodged: check the giant fiber pool")
 
     print("\n── target tracking: does the fighter turn towards a target? ──")
     print("  A stationary target 10 mm away, off to one side. Only the LC10a")

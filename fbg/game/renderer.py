@@ -115,8 +115,8 @@ class FightRenderer:
         """A soft ellipse under a fighter.
 
         Drawn on a surface the size of the shadow. Allocating one the size of
-        the whole scene instead — 8 MB per fighter per frame, then alpha-blitted
-        across all two million pixels — is most of what a frame used to cost.
+        the whole scene instead: 8 MB per fighter per frame, then alpha-blitted
+        across all two million pixels: is most of what a frame used to cost.
         """
         key = (int(sw), int(sw * 0.35))
         shadow = self._shadows.get(key)

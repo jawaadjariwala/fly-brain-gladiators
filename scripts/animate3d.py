@@ -160,7 +160,7 @@ def main():
                  color="#e6ebf1", fontsize=14.5, fontweight="bold")
         fig.text(0.5, 0.937, "166,700 neurons · every dot is where one actually sits",
                  ha="center", color="#7a8894", fontsize=9.5)
-        fig.text(0.5, 0.915, f"something approaching — {dist_mm[f]:.0f} mm away",
+        fig.text(0.5, 0.915, f"something approaching: {dist_mm[f]:.0f} mm away",
                  ha="center", color="#3fd0e3", fontsize=9.5)
         for i, (r, lbl) in enumerate([("loom", "loom detectors"),
                                       ("descending", "descending neurons"),

@@ -2,7 +2,7 @@
 
 Each tick the arena tells each brain what it sees, advances that brain by one
 tick of biological time, reads its descending and motor neurons, and applies the
-result. Nothing between the sensory encoding and the motor readout is designed —
+result. Nothing between the sensory encoding and the motor readout is designed: 
 that stretch is the connectome.
 
 Determinism: given two profiles, an arena config and a seed, a match replays
@@ -39,14 +39,14 @@ BODY_RADIUS = 1.5
 BASELINE_LOCOMOTOR_HZ = 8.0
 
 # ⚠ MODELLING CHOICE, not something the connectome tells us.
-# Fly aggression is triggered by detecting a rival male — chemosensory (cVA
-# pheromone via Or67d) and visual — which converges on pC1. There is no
+# Fly aggression is triggered by detecting a rival male: chemosensory (cVA
+# pheromone via Or67d) and visual, which converges on pC1. There is no
 # pheromone channel in this model, so proximity stands in for "a rival is
 # right there". Measured: pC1 receives essentially nothing from looming alone
 # (0.0-0.3 Hz against a 6 Hz gate), so without this the attack gate never opens.
 #
 # The falloff is the inverse-square law a diffusing point source obeys,
-# saturating at contact — about one body length. The rate is anchored to a
+# saturating at contact: about one body length. The rate is anchored to a
 # measurement, not to fight outcomes: driving pC1 at 8 Hz of looming input cuts
 # the giant fiber by 52%, but at the 20 Hz the arena reaches during a lunge the
 # same drive does nothing, and 25 Hz is where suppression becomes measurable
@@ -58,8 +58,8 @@ RIVAL_CONTACT_MM = 6.5
 RIVAL_DRIVE_HZ = 32.0
 
 # ⚠ MODELLING CHOICE, like the rival drive above.
-# Walking flies make spontaneous body saccades — rapid turns of a few tens of
-# degrees, one or two a second — and suppress them while they are fixating
+# Walking flies make spontaneous body saccades: rapid turns of a few tens of
+# degrees, one or two a second, and suppress them while they are fixating
 # something. That is how a fly which has lost sight of a target finds it again.
 # This model has no central saccade generator, so the arena supplies the
 # command and lets DNa02, the steering command neuron, turn it into a turn:
@@ -116,7 +116,7 @@ STRIKE_ARC_DEG = 70.0
 MAX_TURN_RAD = 3.2 * TICK_MS / 1000.0     # rad per tick at full turn signal
 MAX_SPEED = 34.0 * TICK_MS / 1000.0       # mm per tick at full advance
 DODGE_IMPULSE = 5.5                        # mm, backwards, on an escape
-# A fly's attack is a lunge — it drives its body forward, it does not stand
+# A fly's attack is a lunge, it drives its body forward, it does not stand
 # still and reach. That movement is also the whole dodge mechanic: an attacker
 # closing the distance IS a looming stimulus, so the defender's escape circuit
 # fires because something is actually coming at it. Without the lunge the
@@ -126,7 +126,7 @@ START_HEALTH = 100.0
 
 
 # Animation states. The brain decides every 20 ms, but a body cannot change
-# what it is doing ten times a second — an attack is a committed sequence, not
+# what it is doing ten times a second: an attack is a committed sequence, not
 # a per-tick flag. Rendering reads these, never the raw decision.
 IDLE, WALK, WINDUP, STRIKE, RECOVER, DODGE, GUARD = (
     "idle", "walk", "windup", "strike", "recover", "dodge", "guard")
@@ -273,7 +273,7 @@ class Match:
         The expansion rate is the part that matters, and it is measured with a
         corollary discharge: from where this fighter is NOW, against where the
         opponent WAS. A fly discounts the optic flow its own movement produces,
-        so walking towards an opponent generates no looming signal — only the
+        so walking towards an opponent generates no looming signal: only the
         opponent closing the distance does. Without that subtraction a fighter
         triggers its own escape reflex every time it advances, and the match
         turns into two flies reeling away from each other.
@@ -299,7 +299,7 @@ class Match:
         How many neurons respond is set by the target's angular area; which eye
         they sit in is set by where in the visual field it falls. The split is
         the only thing carrying the direction, so it must not be inflated past
-        1.0 and clipped — doing that saturates the nearer eye at every bearing
+        1.0 and clipped: doing that saturates the nearer eye at every bearing
         off dead-ahead, and the left/right contrast the steering readout
         depends on disappears.
         """
@@ -330,14 +330,14 @@ class Match:
         """Convert what a fighter sees into visual input, on both channels.
 
         Recruitment scales with angular area on each channel, because LC
-        neurons are retinotopic — but the two channels tile the field at
+        neurons are retinotopic, but the two channels tile the field at
         different grains, so the same target reaches a useful number of
         trackers long before it reaches a useful number of loom detectors.
         """
         in_view = abs(math.degrees(bearing)) < 180.0 - REAR_BLIND_DEG / 2
 
         # looming: escape. Rate follows expansion, and only the opponent's
-        # share of it — see _see.
+        # share of it: see _see.
         loom_frac = float(np.clip((math.degrees(theta) / FULL_FIELD_DEG) ** 2, 0.0, 1.0))
         if not in_view:
             loom_frac = 0.0
@@ -409,7 +409,7 @@ class Match:
         Projecting the position back onto the circle keeps the angle it
         reached, so the tangential part of a step survives and only the outward
         part is lost: a fighter driven into the wall at an angle slides along
-        it. One driven straight at it does stay put — what gets it moving again
+        it. One driven straight at it does stay put: what gets it moving again
         is seeing the opponent and turning.
         """
         limit = ARENA_RADIUS - BODY_RADIUS
@@ -430,7 +430,7 @@ class Match:
 
         Without this they walk through each other, and a fighter standing
         inside its opponent sees a bearing that swings through 180 degrees
-        tick to tick — no steering signal survives that.
+        tick to tick: no steering signal survives that.
         """
         dx, dy = self.b.x - self.a.x, self.b.y - self.a.y
         d = math.hypot(dx, dy)

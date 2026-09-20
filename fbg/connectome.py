@@ -25,9 +25,9 @@ from fbg.data import DATA_DIR, SOURCES
 # --- neurotransmitter → sign -------------------------------------------------
 # Acetylcholine is the main EXCITATORY transmitter in the insect CNS.
 # GABA is inhibitory. Glutamate is usually INHIBITORY in the fly CNS (via
-# glutamate-gated chloride channels) — the opposite of the vertebrate case.
+# glutamate-gated chloride channels), the opposite of the vertebrate case.
 EXCITATORY = {"acetylcholine"}
-# Histamine is the photoreceptor transmitter in flies and it is INHIBITORY —
+# Histamine is the photoreceptor transmitter in flies and it is INHIBITORY: 
 # it opens chloride channels on postsynaptic lamina neurons. Relevant here
 # because this project drives the visual system.
 INHIBITORY = {"gaba", "glutamate", "histamine"}
@@ -131,7 +131,7 @@ def build(*, include_monoamines: bool = False, cache: bool = True) -> Connectome
     print(f"\nneurons with a usable sign: {n_signed:,} / {len(body_ids):,} "
           f"({100*n_signed/len(body_ids):.1f}%)")
 
-    # 3. edges — filter 151M raw rows down to annotated-to-annotated
+    # 3. edges: filter 151M raw rows down to annotated-to-annotated
     print("\nfiltering edges...")
     w = feather.read_table(SOURCES["weights"].path, memory_map=True)
     print(f"  raw segment-to-segment rows: {w.num_rows:,}")

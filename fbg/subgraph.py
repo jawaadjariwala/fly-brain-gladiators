@@ -36,7 +36,7 @@ LOOM_TYPES = ["LC4", "LPLC2", "LC6"]
 # LC10a is the male target-tracking channel: it responds to small moving
 # objects rather than to collisions, and it is the pathway a fly uses to steer
 # after another fly. Without it there is no visual input to the steering
-# neurons at all — LC4 and LPLC2 have zero direct edges onto DNa02.
+# neurons at all. LC4 and LPLC2 have zero direct edges onto DNa02.
 TRACKING_TYPES = ["LC10a"]
 AGGRESSION_TYPE_PREFIX = "pC1"          # P1 is a subset of pC1 in this nomenclature
 READOUT_TYPES = ["DNp01", "DNa02", "DNp09"]

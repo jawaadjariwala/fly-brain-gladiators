@@ -1,7 +1,7 @@
 // A gladiator, drawn from above.
 //
 // Everything is laid out in millimetres in the fly's own frame, +x forward,
-// and scaled at draw time — a fly is about 3 mm long and the arena is 50 mm
+// and scaled at draw time, a fly is about 3 mm long and the arena is 50 mm
 // across, so the numbers here are the animal's real proportions.
 //
 // These fight in the air. There is no walk cycle: the legs stay tucked, the
@@ -13,7 +13,7 @@ const TAU = Math.PI * 2;
 // The historical loadouts in miniature. These are three different weapons, not
 // one shape at three lengths:
 //
-//   murmillo     gladius, a short straight sword, behind a scutum — the big
+//   murmillo     gladius, a short straight sword, behind a scutum, the big
 //                rectangular body shield
 //   hoplomachus  hasta, a long thrusting spear with a leaf-shaped head, behind
 //                a parmula, the small round shield
@@ -30,7 +30,7 @@ const WEAPON = {
 
 // --- who is who ------------------------------------------------------------
 // Six colours far enough apart to tell any pairing apart at arena size, and a
-// shield device each. Colour is a presentation choice — a ludus's colours —
+// shield device each. Colour is a presentation choice, a ludus's colours, 
 // and is the only thing here that is not read off the profile.
 export const LOOKS = {
   OCTAVIAN:   { color: [232, 84, 63],   device: 'bolt' },
@@ -139,7 +139,7 @@ function drawSica(ctx, lit) {
 
 const ARMS = { gladius: drawGladius, hasta: drawHasta, sica: drawSica };
 
-// Shields are painted in the fighter's colour with a bronze rim and boss —
+// Shields are painted in the fighter's colour with a bronze rim and boss: 
 // which is both what a gladiator's shield looked like and the quickest way to
 // tell the two of them apart on a dark floor.
 function drawShield(ctx, kind, face, raised, device) {

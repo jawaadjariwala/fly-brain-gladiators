@@ -37,11 +37,11 @@ class Source:
 
 
 SOURCES = {
-    # neuron-to-neuron connection strengths — the edge list
+    # neuron-to-neuron connection strengths, the edge list
     "weights": Source("weights", "connectome-weights-male-cns-v1.0-minconf-0.5.feather", 1100),
     # curated annotations: cell type, class, side, neuropil
     "annotations": Source("annotations", "body-annotations-male-cns-v1.0-minconf-0.5.feather", 13),
-    # per-neuron neurotransmitter predictions — gives us the sign
+    # per-neuron neurotransmitter predictions: gives us the sign
     "neurotransmitters": Source("neurotransmitters", "body-neurotransmitters-male-cns-v1.0.feather", 42),
 }
 
