@@ -80,9 +80,12 @@ body {
   font: 500 12px/1 'IBM Plex Mono', monospace;
   color: var(--muted);
 }
+/* The right-hand fighter is the same card mirrored. It swaps name and class in
+   the markup rather than with `order`, because `order` only moved those two —
+   the bar and the health number kept the default 0 and jumped above the name,
+   which is what put the two bars on different lines. */
 .fighter.right { text-align: right; grid-template-columns: auto 1fr; }
-.fighter.right .name { order: 2; }
-.fighter.right .class { order: 1; text-align: left; }
+.fighter.right .class { text-align: left; }
 .fighter.right .hp { text-align: right; }
 
 .versus { display: grid; justify-items: center; gap: 4px; padding-top: 6px; }

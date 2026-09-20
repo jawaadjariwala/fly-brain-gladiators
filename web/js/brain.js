@@ -66,30 +66,63 @@ export class BrainPanel {
       if (!this.byGroup.has(g)) this.byGroup.set(g, []);
       this.byGroup.get(g).push(i);
     }
+
+    // Frame each part on the body of its cells rather than on its outliers.
+    // The stored coordinates are normalised over the full extent, and a few
+    // distant somata stretch that until the dense anatomy floats in the middle
+    // of a mostly empty box — which reads as the drawing sitting off to one
+    // side. Trimming to the 1st-99th percentile lets it fill the frame.
+    this.bounds = [];
+    this.aspect = [];
+    for (const part of [0, 1]) {
+      const xs = [], ys = [];
+      for (let i = 0; i < layout.part.length; i++) {
+        if (layout.part[i] !== part) continue;
+        xs.push(layout.x[i]); ys.push(layout.y[i]);
+      }
+      xs.sort((a, b) => a - b); ys.sort((a, b) => a - b);
+      const q = (arr, f) => arr[Math.min(arr.length - 1, Math.floor(f * arr.length))];
+      const b = { x0: q(xs, 0.01), x1: q(xs, 0.99), y0: q(ys, 0.01), y1: q(ys, 0.99) };
+      this.bounds.push(b);
+      // x and y were normalised independently, so the true proportions live in
+      // the header; trimming scales them by however much was trimmed off each.
+      const full = layout.spans[part === 0 ? 'brain' : 'cord'].aspect;
+      this.aspect.push(full * (b.x1 - b.x0) / Math.max(b.y1 - b.y0, 1e-6));
+    }
   }
 
-  // Brain and cord side by side, each fitted to its own proportions. The cord
-  // is two and a half times taller than it is wide and the brain twice as wide
-  // as tall, so a single box squashes one of them into a smear.
+  // Brain and cord side by side, each at its own proportions. The cord is more
+  // than twice as tall as it is wide and the brain twice as wide as tall, so a
+  // single box squashes one of them into a smear. They share a height, and the
+  // pair is scaled to fit and centred.
   layoutFor(w, h) {
-    const { spans } = this.layout;
     const pad = 8, gap = 10;
-    const inner = h - pad * 2;
-    const cordW = inner * spans.cord.aspect;
-    const brainW = Math.min(w - cordW - gap - pad * 2, inner * spans.brain.aspect * 1.9);
-    const brainH = brainW / spans.brain.aspect;
-    const x0 = pad + Math.max(0, (w - pad * 2 - brainW - gap - cordW) / 2);
+    const innerH = h - pad * 2;
+    const innerW = w - pad * 2 - gap;
+    let ph = innerH;
+    let bw = ph * this.aspect[0];
+    let cw = ph * this.aspect[1];
+    if (bw + cw > innerW) {
+      const k = innerW / (bw + cw);
+      ph *= k; bw *= k; cw *= k;
+    }
+    const x0 = pad + (innerW - bw - cw) / 2;
+    const y0 = pad + (innerH - ph) / 2;
     return {
-      brain: { x: x0, y: pad + (inner - brainH) / 2, w: brainW, h: brainH },
-      cord: { x: x0 + brainW + gap, y: pad, w: cordW, h: inner },
+      brain: { x: x0, y: y0, w: bw, h: ph },
+      cord: { x: x0 + bw + gap, y: y0, w: cw, h: ph },
     };
   }
 
   place(i, rects) {
     const { x, y, part } = this.layout;
-    const r = part[i] === 0 ? rects.brain : part[i] === 1 ? rects.cord : null;
+    const p = part[i];
+    const r = p === 0 ? rects.brain : p === 1 ? rects.cord : null;
     if (!r) return null;
-    return [r.x + x[i] * r.w, r.y + (1 - y[i]) * r.h];
+    const b = this.bounds[p];
+    const u = Math.min(1, Math.max(0, (x[i] - b.x0) / (b.x1 - b.x0)));
+    const v = Math.min(1, Math.max(0, (y[i] - b.y0) / (b.y1 - b.y0)));
+    return [r.x + u * r.w, r.y + (1 - v) * r.h];
   }
 
   // The faint anatomy never changes, so it is drawn once per size and blitted.

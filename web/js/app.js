@@ -204,6 +204,8 @@ addEventListener('keydown', e => {
 window.__fbg = {
   state, render,
   get arena() { return arena; },
+  get brain() { return brain; },
+  get panels() { return brainCanvases; },
   get view() { return view; },
   get resizes() { return resizes; },
   time(n = 30) {
