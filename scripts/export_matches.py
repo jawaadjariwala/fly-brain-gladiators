@@ -136,9 +136,9 @@ def main() -> None:
                     help="re-simulate matches already on disk")
     ap.add_argument("--index-only", action="store_true",
                     help="rewrite index.json from what is on disk, no simulation")
-    # Fights are watched in slow motion, so 20 s of simulated time is already a
-    # long watch, and capping it bounds the file size.
-    ap.add_argument("--max-s", type=float, default=20.0)
+    # Fights are watched in slow motion, so this is already a long watch, and
+    # capping it bounds the file size.
+    ap.add_argument("--max-s", type=float, default=30.0)
     args = ap.parse_args()
 
     if args.index_only:

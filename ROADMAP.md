@@ -123,6 +123,24 @@ Genuinely unresolved, and contributions or opinions are welcome:
 
 Matches now hold engagement for their full duration — mean separation over the last five seconds is 3–15 mm rather than the 45 mm of opposite walls — and five of eight sample matchups end with a winner.
 
+**~~Most matches end level.~~ Resolved.** Four fifths of the library ran to the
+clock, and the draws were not close fights running out of time: they landed a
+median of four hits against fourteen in a decisive match, and left the loser
+above 70 health. The fighters were within striking distance about 70% of the
+time but pointed at each other only 20%, so almost no attack ever fired.
+
+Measured across a sample of matchups, the strike arc is what decides it:
+widening the half-angle from 45 to 70 degrees, changing nothing else, took
+decisive endings from 20% to 70%. Widening rival detection from 4.0 to 6.5 mm
+is what keeps them orbiting each other rather than drifting, lifting time spent
+within striking distance from 20% to 37%. Damage is up about a third, because
+with the wider arc they trade far more and at the old figures an exchange
+barely moved the health bars.
+
+The library now runs 56 wins to 19 draws, near three to one, at a mean of 19
+seconds. An 85 degree arc reached 100% decisive and was rejected: that is a
+170 degree strike window, which is no longer a lunge.
+
 **Strikes almost never miss.** `_resolve_strike` re-checks range but nothing else, and after a lunge the attacker is nearly always still in range — one miss in roughly 157 attacks across nine sample matchups. A defender that dodges during the windup ought to be gone when the strike resolves, and at present it usually is not.
 
 **DNp09 never fires, so nothing ever guards.** The guard action was previously reached on 25% of ticks, but entirely because the blanket locomotor drive was injecting Poisson spikes straight into DNp09. With that removed the honest readout is zero — nothing in the arena drives a stopping command. Either the model needs a reason to stop, or guard is not a mechanic this connectome supports.

@@ -399,7 +399,7 @@ function syncRoster() {
   });
 
   document.querySelectorAll('.matchup .slot').forEach((el, i) => {
-    el.innerHTML = picked[i] ? '' : `<em>${i === 0 ? 'choose a fighter' : 'and another'}</em>`;
+    el.innerHTML = picked[i] ? '' : '<em>choose a fighter</em>';
     if (picked[i]) el.textContent = picked[i];
   });
 

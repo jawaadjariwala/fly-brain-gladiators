@@ -115,860 +115,720 @@
    "a": "BASTION",
    "b": "CASSIUS",
    "seed": 1,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 941144
+   "ticks": 880,
+   "winner": "CASSIUS",
+   "duration_s": 17.6,
+   "bytes": 831656
   },
   {
    "slug": "bastion__cassius__s2",
    "a": "BASTION",
    "b": "CASSIUS",
    "seed": 2,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 868840
+   "duration_s": 30.0,
+   "bytes": 1543192
   },
   {
    "slug": "bastion__cassius__s3",
    "a": "BASTION",
    "b": "CASSIUS",
    "seed": 3,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 936752
+   "duration_s": 30.0,
+   "bytes": 1322560
   },
   {
    "slug": "bastion__cassius__s4",
    "a": "BASTION",
    "b": "CASSIUS",
    "seed": 4,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 935088
+   "duration_s": 30.0,
+   "bytes": 1418232
   },
   {
    "slug": "bastion__cassius__s5",
    "a": "BASTION",
    "b": "CASSIUS",
    "seed": 5,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 884464
-  },
-  {
-   "slug": "bastion__cassius__s6",
-   "a": "BASTION",
-   "b": "CASSIUS",
-   "seed": 6,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 968632
+   "duration_s": 30.0,
+   "bytes": 1418112
   },
   {
    "slug": "bastion__gemini-a__s1",
    "a": "BASTION",
    "b": "GEMINI-A",
    "seed": 1,
-   "ticks": 580,
-   "winner": "BASTION",
-   "duration_s": 11.6,
-   "bytes": 569120
+   "ticks": 1500,
+   "winner": "draw",
+   "duration_s": 30.0,
+   "bytes": 1400768
   },
   {
    "slug": "bastion__gemini-a__s2",
    "a": "BASTION",
    "b": "GEMINI-A",
    "seed": 2,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 914160
+   "ticks": 983,
+   "winner": "BASTION",
+   "duration_s": 19.66,
+   "bytes": 958200
   },
   {
    "slug": "bastion__gemini-a__s3",
    "a": "BASTION",
    "b": "GEMINI-A",
    "seed": 3,
-   "ticks": 433,
+   "ticks": 377,
    "winner": "BASTION",
-   "duration_s": 8.66,
-   "bytes": 415576
+   "duration_s": 7.54,
+   "bytes": 388744
   },
   {
    "slug": "bastion__gemini-a__s4",
    "a": "BASTION",
    "b": "GEMINI-A",
    "seed": 4,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 914672
+   "ticks": 345,
+   "winner": "BASTION",
+   "duration_s": 6.9,
+   "bytes": 354488
   },
   {
    "slug": "bastion__gemini-a__s5",
    "a": "BASTION",
    "b": "GEMINI-A",
    "seed": 5,
-   "ticks": 759,
+   "ticks": 981,
    "winner": "BASTION",
-   "duration_s": 15.18,
-   "bytes": 715776
-  },
-  {
-   "slug": "bastion__gemini-a__s6",
-   "a": "BASTION",
-   "b": "GEMINI-A",
-   "seed": 6,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 897240
+   "duration_s": 19.62,
+   "bytes": 920720
   },
   {
    "slug": "bastion__gemini-b__s1",
    "a": "BASTION",
    "b": "GEMINI-B",
    "seed": 1,
-   "ticks": 490,
+   "ticks": 369,
    "winner": "BASTION",
-   "duration_s": 9.8,
-   "bytes": 488568
+   "duration_s": 7.38,
+   "bytes": 370008
   },
   {
    "slug": "bastion__gemini-b__s2",
    "a": "BASTION",
    "b": "GEMINI-B",
    "seed": 2,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 919528
+   "ticks": 604,
+   "winner": "GEMINI-B",
+   "duration_s": 12.08,
+   "bytes": 633464
   },
   {
    "slug": "bastion__gemini-b__s3",
    "a": "BASTION",
    "b": "GEMINI-B",
    "seed": 3,
-   "ticks": 402,
+   "ticks": 510,
    "winner": "BASTION",
-   "duration_s": 8.04,
-   "bytes": 390208
+   "duration_s": 10.2,
+   "bytes": 499968
   },
   {
    "slug": "bastion__gemini-b__s4",
    "a": "BASTION",
    "b": "GEMINI-B",
    "seed": 4,
-   "ticks": 908,
+   "ticks": 950,
    "winner": "BASTION",
-   "duration_s": 18.16,
-   "bytes": 805040
+   "duration_s": 19.0,
+   "bytes": 894472
   },
   {
    "slug": "bastion__gemini-b__s5",
    "a": "BASTION",
    "b": "GEMINI-B",
    "seed": 5,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 879016
-  },
-  {
-   "slug": "bastion__gemini-b__s6",
-   "a": "BASTION",
-   "b": "GEMINI-B",
-   "seed": 6,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 882176
+   "ticks": 273,
+   "winner": "BASTION",
+   "duration_s": 5.46,
+   "bytes": 290240
   },
   {
    "slug": "bastion__nox__s1",
    "a": "BASTION",
    "b": "NOX",
    "seed": 1,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 903752
+   "ticks": 590,
+   "winner": "NOX",
+   "duration_s": 11.8,
+   "bytes": 593360
   },
   {
    "slug": "bastion__nox__s2",
    "a": "BASTION",
    "b": "NOX",
    "seed": 2,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 891568
+   "duration_s": 30.0,
+   "bytes": 1527208
   },
   {
    "slug": "bastion__nox__s3",
    "a": "BASTION",
    "b": "NOX",
    "seed": 3,
-   "ticks": 440,
-   "winner": "BASTION",
-   "duration_s": 8.8,
-   "bytes": 436928
+   "ticks": 1500,
+   "winner": "draw",
+   "duration_s": 30.0,
+   "bytes": 1487776
   },
   {
    "slug": "bastion__nox__s4",
    "a": "BASTION",
    "b": "NOX",
    "seed": 4,
-   "ticks": 509,
-   "winner": "BASTION",
-   "duration_s": 10.18,
-   "bytes": 511504
+   "ticks": 1456,
+   "winner": "NOX",
+   "duration_s": 29.12,
+   "bytes": 1395344
   },
   {
    "slug": "bastion__nox__s5",
    "a": "BASTION",
    "b": "NOX",
    "seed": 5,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 918312
-  },
-  {
-   "slug": "bastion__nox__s6",
-   "a": "BASTION",
-   "b": "NOX",
-   "seed": 6,
-   "ticks": 406,
+   "ticks": 703,
    "winner": "BASTION",
-   "duration_s": 8.12,
-   "bytes": 413624
+   "duration_s": 14.06,
+   "bytes": 670312
   },
   {
    "slug": "bastion__octavian__s1",
    "a": "BASTION",
    "b": "OCTAVIAN",
    "seed": 1,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 942712
+   "ticks": 756,
+   "winner": "OCTAVIAN",
+   "duration_s": 15.12,
+   "bytes": 893584
   },
   {
    "slug": "bastion__octavian__s2",
    "a": "BASTION",
    "b": "OCTAVIAN",
    "seed": 2,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 911264
+   "ticks": 1143,
+   "winner": "OCTAVIAN",
+   "duration_s": 22.86,
+   "bytes": 1275336
   },
   {
    "slug": "bastion__octavian__s3",
    "a": "BASTION",
    "b": "OCTAVIAN",
    "seed": 3,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 953856
+   "ticks": 555,
+   "winner": "OCTAVIAN",
+   "duration_s": 11.1,
+   "bytes": 651656
   },
   {
    "slug": "bastion__octavian__s4",
    "a": "BASTION",
    "b": "OCTAVIAN",
    "seed": 4,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 918200
+   "ticks": 527,
+   "winner": "OCTAVIAN",
+   "duration_s": 10.54,
+   "bytes": 610728
   },
   {
    "slug": "bastion__octavian__s5",
    "a": "BASTION",
    "b": "OCTAVIAN",
    "seed": 5,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 919152
-  },
-  {
-   "slug": "bastion__octavian__s6",
-   "a": "BASTION",
-   "b": "OCTAVIAN",
-   "seed": 6,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 912800
+   "duration_s": 30.0,
+   "bytes": 1434688
   },
   {
    "slug": "cassius__gemini-a__s1",
    "a": "CASSIUS",
    "b": "GEMINI-A",
    "seed": 1,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 917232
+   "ticks": 798,
+   "winner": "GEMINI-A",
+   "duration_s": 15.96,
+   "bytes": 799040
   },
   {
    "slug": "cassius__gemini-a__s2",
    "a": "CASSIUS",
    "b": "GEMINI-A",
    "seed": 2,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 876464
+   "ticks": 989,
+   "winner": "GEMINI-A",
+   "duration_s": 19.78,
+   "bytes": 987888
   },
   {
    "slug": "cassius__gemini-a__s3",
    "a": "CASSIUS",
    "b": "GEMINI-A",
    "seed": 3,
-   "ticks": 511,
+   "ticks": 804,
    "winner": "CASSIUS",
-   "duration_s": 10.22,
-   "bytes": 482456
+   "duration_s": 16.08,
+   "bytes": 778872
   },
   {
    "slug": "cassius__gemini-a__s4",
    "a": "CASSIUS",
    "b": "GEMINI-A",
    "seed": 4,
-   "ticks": 336,
+   "ticks": 1416,
    "winner": "CASSIUS",
-   "duration_s": 6.72,
-   "bytes": 361256
+   "duration_s": 28.32,
+   "bytes": 1538024
   },
   {
    "slug": "cassius__gemini-a__s5",
    "a": "CASSIUS",
    "b": "GEMINI-A",
    "seed": 5,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 888200
-  },
-  {
-   "slug": "cassius__gemini-a__s6",
-   "a": "CASSIUS",
-   "b": "GEMINI-A",
-   "seed": 6,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 865064
+   "duration_s": 30.0,
+   "bytes": 1410176
   },
   {
    "slug": "cassius__gemini-b__s1",
    "a": "CASSIUS",
    "b": "GEMINI-B",
    "seed": 1,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 915288
+   "ticks": 531,
+   "winner": "GEMINI-B",
+   "duration_s": 10.62,
+   "bytes": 541464
   },
   {
    "slug": "cassius__gemini-b__s2",
    "a": "CASSIUS",
    "b": "GEMINI-B",
    "seed": 2,
-   "ticks": 982,
+   "ticks": 397,
    "winner": "CASSIUS",
-   "duration_s": 19.64,
-   "bytes": 906968
+   "duration_s": 7.94,
+   "bytes": 408472
   },
   {
    "slug": "cassius__gemini-b__s3",
    "a": "CASSIUS",
    "b": "GEMINI-B",
    "seed": 3,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 910704
+   "ticks": 899,
+   "winner": "GEMINI-B",
+   "duration_s": 17.98,
+   "bytes": 829480
   },
   {
    "slug": "cassius__gemini-b__s4",
    "a": "CASSIUS",
    "b": "GEMINI-B",
    "seed": 4,
-   "ticks": 893,
-   "winner": "CASSIUS",
-   "duration_s": 17.86,
-   "bytes": 824832
+   "ticks": 1034,
+   "winner": "GEMINI-B",
+   "duration_s": 20.68,
+   "bytes": 983848
   },
   {
    "slug": "cassius__gemini-b__s5",
    "a": "CASSIUS",
    "b": "GEMINI-B",
    "seed": 5,
-   "ticks": 744,
+   "ticks": 481,
    "winner": "CASSIUS",
-   "duration_s": 14.88,
-   "bytes": 674240
-  },
-  {
-   "slug": "cassius__gemini-b__s6",
-   "a": "CASSIUS",
-   "b": "GEMINI-B",
-   "seed": 6,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 893280
+   "duration_s": 9.62,
+   "bytes": 500840
   },
   {
    "slug": "cassius__nox__s1",
    "a": "CASSIUS",
    "b": "NOX",
    "seed": 1,
-   "ticks": 515,
+   "ticks": 1261,
    "winner": "NOX",
-   "duration_s": 10.3,
-   "bytes": 518448
+   "duration_s": 25.22,
+   "bytes": 1190504
   },
   {
    "slug": "cassius__nox__s2",
    "a": "CASSIUS",
    "b": "NOX",
    "seed": 2,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 907392
+   "ticks": 656,
+   "winner": "NOX",
+   "duration_s": 13.12,
+   "bytes": 636552
   },
   {
    "slug": "cassius__nox__s3",
    "a": "CASSIUS",
    "b": "NOX",
    "seed": 3,
-   "ticks": 635,
-   "winner": "CASSIUS",
-   "duration_s": 12.7,
-   "bytes": 609600
+   "ticks": 1500,
+   "winner": "draw",
+   "duration_s": 30.0,
+   "bytes": 1379984
   },
   {
    "slug": "cassius__nox__s4",
    "a": "CASSIUS",
    "b": "NOX",
    "seed": 4,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 869008
+   "ticks": 329,
+   "winner": "CASSIUS",
+   "duration_s": 6.58,
+   "bytes": 349824
   },
   {
    "slug": "cassius__nox__s5",
    "a": "CASSIUS",
    "b": "NOX",
    "seed": 5,
-   "ticks": 464,
-   "winner": "CASSIUS",
-   "duration_s": 9.28,
-   "bytes": 469104
-  },
-  {
-   "slug": "cassius__nox__s6",
-   "a": "CASSIUS",
-   "b": "NOX",
-   "seed": 6,
-   "ticks": 735,
-   "winner": "CASSIUS",
-   "duration_s": 14.7,
-   "bytes": 686864
+   "ticks": 468,
+   "winner": "NOX",
+   "duration_s": 9.36,
+   "bytes": 473528
   },
   {
    "slug": "cassius__octavian__s1",
    "a": "CASSIUS",
    "b": "OCTAVIAN",
    "seed": 1,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 923048
+   "ticks": 1211,
+   "winner": "CASSIUS",
+   "duration_s": 24.22,
+   "bytes": 1158512
   },
   {
    "slug": "cassius__octavian__s2",
    "a": "CASSIUS",
    "b": "OCTAVIAN",
    "seed": 2,
-   "ticks": 498,
+   "ticks": 952,
    "winner": "OCTAVIAN",
-   "duration_s": 9.96,
-   "bytes": 487944
+   "duration_s": 19.04,
+   "bytes": 969288
   },
   {
    "slug": "cassius__octavian__s3",
    "a": "CASSIUS",
    "b": "OCTAVIAN",
    "seed": 3,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 922960
+   "ticks": 463,
+   "winner": "OCTAVIAN",
+   "duration_s": 9.26,
+   "bytes": 500824
   },
   {
    "slug": "cassius__octavian__s4",
    "a": "CASSIUS",
    "b": "OCTAVIAN",
    "seed": 4,
-   "ticks": 349,
-   "winner": "OCTAVIAN",
-   "duration_s": 6.98,
-   "bytes": 368864
+   "ticks": 1500,
+   "winner": "draw",
+   "duration_s": 30.0,
+   "bytes": 1507432
   },
   {
    "slug": "cassius__octavian__s5",
    "a": "CASSIUS",
    "b": "OCTAVIAN",
    "seed": 5,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 1021096
-  },
-  {
-   "slug": "cassius__octavian__s6",
-   "a": "CASSIUS",
-   "b": "OCTAVIAN",
-   "seed": 6,
-   "ticks": 752,
-   "winner": "OCTAVIAN",
-   "duration_s": 15.04,
-   "bytes": 717952
+   "ticks": 1197,
+   "winner": "CASSIUS",
+   "duration_s": 23.94,
+   "bytes": 1192136
   },
   {
    "slug": "gemini-a__gemini-b__s1",
    "a": "GEMINI-A",
    "b": "GEMINI-B",
    "seed": 1,
-   "ticks": 383,
-   "winner": "GEMINI-A",
-   "duration_s": 7.66,
-   "bytes": 379568
+   "ticks": 1500,
+   "winner": "draw",
+   "duration_s": 30.0,
+   "bytes": 1366112
   },
   {
    "slug": "gemini-a__gemini-b__s2",
    "a": "GEMINI-A",
    "b": "GEMINI-B",
    "seed": 2,
-   "ticks": 888,
+   "ticks": 324,
    "winner": "GEMINI-B",
-   "duration_s": 17.76,
-   "bytes": 815608
+   "duration_s": 6.48,
+   "bytes": 345992
   },
   {
    "slug": "gemini-a__gemini-b__s3",
    "a": "GEMINI-A",
    "b": "GEMINI-B",
    "seed": 3,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 860560
+   "ticks": 475,
+   "winner": "GEMINI-B",
+   "duration_s": 9.5,
+   "bytes": 476872
   },
   {
    "slug": "gemini-a__gemini-b__s4",
    "a": "GEMINI-A",
    "b": "GEMINI-B",
    "seed": 4,
-   "ticks": 989,
+   "ticks": 1147,
    "winner": "GEMINI-B",
-   "duration_s": 19.78,
-   "bytes": 896560
+   "duration_s": 22.94,
+   "bytes": 1011888
   },
   {
    "slug": "gemini-a__gemini-b__s5",
    "a": "GEMINI-A",
    "b": "GEMINI-B",
    "seed": 5,
-   "ticks": 561,
+   "ticks": 516,
    "winner": "GEMINI-B",
-   "duration_s": 11.22,
-   "bytes": 543536
-  },
-  {
-   "slug": "gemini-a__gemini-b__s6",
-   "a": "GEMINI-A",
-   "b": "GEMINI-B",
-   "seed": 6,
-   "ticks": 930,
-   "winner": "GEMINI-B",
-   "duration_s": 18.6,
-   "bytes": 852712
+   "duration_s": 10.32,
+   "bytes": 558344
   },
   {
    "slug": "gemini-a__nox__s1",
    "a": "GEMINI-A",
    "b": "NOX",
    "seed": 1,
-   "ticks": 843,
-   "winner": "NOX",
-   "duration_s": 16.86,
-   "bytes": 760896
+   "ticks": 547,
+   "winner": "GEMINI-A",
+   "duration_s": 10.94,
+   "bytes": 517424
   },
   {
    "slug": "gemini-a__nox__s2",
    "a": "GEMINI-A",
    "b": "NOX",
    "seed": 2,
-   "ticks": 243,
-   "winner": "GEMINI-A",
-   "duration_s": 4.86,
-   "bytes": 250256
+   "ticks": 1500,
+   "winner": "draw",
+   "duration_s": 30.0,
+   "bytes": 1434408
   },
   {
    "slug": "gemini-a__nox__s3",
    "a": "GEMINI-A",
    "b": "NOX",
    "seed": 3,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 887944
+   "duration_s": 30.0,
+   "bytes": 1306176
   },
   {
    "slug": "gemini-a__nox__s4",
    "a": "GEMINI-A",
    "b": "NOX",
    "seed": 4,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 864656
+   "ticks": 616,
+   "winner": "NOX",
+   "duration_s": 12.32,
+   "bytes": 573864
   },
   {
    "slug": "gemini-a__nox__s5",
    "a": "GEMINI-A",
    "b": "NOX",
    "seed": 5,
-   "ticks": 389,
-   "winner": "GEMINI-A",
-   "duration_s": 7.78,
-   "bytes": 377040
-  },
-  {
-   "slug": "gemini-a__nox__s6",
-   "a": "GEMINI-A",
-   "b": "NOX",
-   "seed": 6,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 880592
+   "duration_s": 30.0,
+   "bytes": 1426296
   },
   {
    "slug": "gemini-a__octavian__s1",
    "a": "GEMINI-A",
    "b": "OCTAVIAN",
    "seed": 1,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 919432
+   "ticks": 443,
+   "winner": "OCTAVIAN",
+   "duration_s": 8.86,
+   "bytes": 469464
   },
   {
    "slug": "gemini-a__octavian__s2",
    "a": "GEMINI-A",
    "b": "OCTAVIAN",
    "seed": 2,
-   "ticks": 513,
-   "winner": "OCTAVIAN",
-   "duration_s": 10.26,
-   "bytes": 516144
+   "ticks": 1500,
+   "winner": "draw",
+   "duration_s": 30.0,
+   "bytes": 1563368
   },
   {
    "slug": "gemini-a__octavian__s3",
    "a": "GEMINI-A",
    "b": "OCTAVIAN",
    "seed": 3,
-   "ticks": 457,
-   "winner": "GEMINI-A",
-   "duration_s": 9.14,
-   "bytes": 465472
+   "ticks": 1383,
+   "winner": "OCTAVIAN",
+   "duration_s": 27.66,
+   "bytes": 1333808
   },
   {
    "slug": "gemini-a__octavian__s4",
    "a": "GEMINI-A",
    "b": "OCTAVIAN",
    "seed": 4,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 951168
+   "ticks": 667,
+   "winner": "OCTAVIAN",
+   "duration_s": 13.34,
+   "bytes": 739312
   },
   {
    "slug": "gemini-a__octavian__s5",
    "a": "GEMINI-A",
    "b": "OCTAVIAN",
    "seed": 5,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 914872
-  },
-  {
-   "slug": "gemini-a__octavian__s6",
-   "a": "GEMINI-A",
-   "b": "OCTAVIAN",
-   "seed": 6,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 923648
+   "ticks": 1356,
+   "winner": "OCTAVIAN",
+   "duration_s": 27.12,
+   "bytes": 1331352
   },
   {
    "slug": "gemini-b__nox__s1",
    "a": "GEMINI-B",
    "b": "NOX",
    "seed": 1,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 894512
+   "ticks": 508,
+   "winner": "NOX",
+   "duration_s": 10.16,
+   "bytes": 511712
   },
   {
    "slug": "gemini-b__nox__s2",
    "a": "GEMINI-B",
    "b": "NOX",
    "seed": 2,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 907632
+   "duration_s": 30.0,
+   "bytes": 1386360
   },
   {
    "slug": "gemini-b__nox__s3",
    "a": "GEMINI-B",
    "b": "NOX",
    "seed": 3,
-   "ticks": 748,
+   "ticks": 574,
    "winner": "NOX",
-   "duration_s": 14.96,
-   "bytes": 691112
+   "duration_s": 11.48,
+   "bytes": 552512
   },
   {
    "slug": "gemini-b__nox__s4",
    "a": "GEMINI-B",
    "b": "NOX",
    "seed": 4,
-   "ticks": 410,
-   "winner": "GEMINI-B",
-   "duration_s": 8.2,
-   "bytes": 388072
+   "ticks": 1069,
+   "winner": "NOX",
+   "duration_s": 21.38,
+   "bytes": 974320
   },
   {
    "slug": "gemini-b__nox__s5",
    "a": "GEMINI-B",
    "b": "NOX",
    "seed": 5,
-   "ticks": 767,
+   "ticks": 463,
    "winner": "NOX",
-   "duration_s": 15.34,
-   "bytes": 715792
-  },
-  {
-   "slug": "gemini-b__nox__s6",
-   "a": "GEMINI-B",
-   "b": "NOX",
-   "seed": 6,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 866864
+   "duration_s": 9.26,
+   "bytes": 461584
   },
   {
    "slug": "gemini-b__octavian__s1",
    "a": "GEMINI-B",
    "b": "OCTAVIAN",
    "seed": 1,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 898912
+   "ticks": 1437,
+   "winner": "OCTAVIAN",
+   "duration_s": 28.74,
+   "bytes": 1506128
   },
   {
    "slug": "gemini-b__octavian__s2",
    "a": "GEMINI-B",
    "b": "OCTAVIAN",
    "seed": 2,
-   "ticks": 561,
+   "ticks": 327,
    "winner": "OCTAVIAN",
-   "duration_s": 11.22,
-   "bytes": 563064
+   "duration_s": 6.54,
+   "bytes": 338120
   },
   {
    "slug": "gemini-b__octavian__s3",
    "a": "GEMINI-B",
    "b": "OCTAVIAN",
    "seed": 3,
-   "ticks": 484,
-   "winner": "GEMINI-B",
-   "duration_s": 9.68,
-   "bytes": 476304
+   "ticks": 1500,
+   "winner": "draw",
+   "duration_s": 30.0,
+   "bytes": 1458808
   },
   {
    "slug": "gemini-b__octavian__s4",
    "a": "GEMINI-B",
    "b": "OCTAVIAN",
    "seed": 4,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 901520
+   "ticks": 677,
+   "winner": "OCTAVIAN",
+   "duration_s": 13.54,
+   "bytes": 653176
   },
   {
    "slug": "gemini-b__octavian__s5",
    "a": "GEMINI-B",
    "b": "OCTAVIAN",
    "seed": 5,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 908792
-  },
-  {
-   "slug": "gemini-b__octavian__s6",
-   "a": "GEMINI-B",
-   "b": "OCTAVIAN",
-   "seed": 6,
-   "ticks": 871,
+   "ticks": 379,
    "winner": "OCTAVIAN",
-   "duration_s": 17.42,
-   "bytes": 814296
+   "duration_s": 7.58,
+   "bytes": 400608
   },
   {
    "slug": "nox__octavian__s1",
    "a": "NOX",
    "b": "OCTAVIAN",
    "seed": 1,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 872240
+   "ticks": 1082,
+   "winner": "OCTAVIAN",
+   "duration_s": 21.64,
+   "bytes": 1179920
   },
   {
    "slug": "nox__octavian__s2",
    "a": "NOX",
    "b": "OCTAVIAN",
    "seed": 2,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 893808
+   "ticks": 662,
+   "winner": "OCTAVIAN",
+   "duration_s": 13.24,
+   "bytes": 674464
   },
   {
    "slug": "nox__octavian__s3",
@@ -976,39 +836,29 @@
    "b": "OCTAVIAN",
    "seed": 3,
    "ticks": 1000,
-   "winner": "draw",
+   "winner": "OCTAVIAN",
    "duration_s": 20.0,
-   "bytes": 905664
+   "bytes": 1034336
   },
   {
    "slug": "nox__octavian__s4",
    "a": "NOX",
    "b": "OCTAVIAN",
    "seed": 4,
-   "ticks": 1000,
+   "ticks": 1500,
    "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 930536
+   "duration_s": 30.0,
+   "bytes": 1485552
   },
   {
    "slug": "nox__octavian__s5",
    "a": "NOX",
    "b": "OCTAVIAN",
    "seed": 5,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 907320
-  },
-  {
-   "slug": "nox__octavian__s6",
-   "a": "NOX",
-   "b": "OCTAVIAN",
-   "seed": 6,
-   "ticks": 1000,
-   "winner": "draw",
-   "duration_s": 20.0,
-   "bytes": 905864
+   "ticks": 1120,
+   "winner": "NOX",
+   "duration_s": 22.4,
+   "bytes": 1094320
   }
  ]
 }
