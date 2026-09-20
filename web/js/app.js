@@ -9,6 +9,7 @@ import { loadMatch, loadIndex, loadLayout } from './match.js';
 import { Arena } from './arena.js';
 import { BrainPanel, GROUPS } from './brain.js';
 import { drawFly, LOOKS, DEFAULT_LOOK } from './sprite.js';
+import { Sound } from './audio.js';
 
 const $ = sel => document.querySelector(sel);
 const lookOf = name => LOOKS[name] ?? DEFAULT_LOOK;
@@ -33,7 +34,13 @@ const els = {
   restart: $('#restart'), speed: $('#speed'),
   picker: $('#picker'), roster: $('#roster'), fight: $('#fight'),
   random: $('#randomPick'), newFight: $('#newFight'),
+  countdown: $('#countdown'), mute: $('#mute'),
 };
+
+const sound = new Sound();
+// Which events have already been played. Sound follows the recording, so it
+// has to be driven off the tick the player is showing, not off wall clock.
+let soundCursor = 0;
 
 const state = { match: null, t: 0, playing: true, speed: 0.5, last: 0, tints: [] };
 let arena = null;
@@ -135,6 +142,27 @@ function render() {
   }
 }
 
+// Fire the match's own events as the playhead crosses them. A large jump means
+// the user scrubbed, and replaying a second of clashes at once is noise, so
+// those are skipped and the cursor just moves.
+function playEventsTo(tick) {
+  const m = state.match;
+  if (!m) return;
+  const jumped = tick < soundCursor || tick - soundCursor > 25;
+  if (jumped) { soundCursor = tick; return; }
+  for (const e of m.events) {
+    if (e.tick <= soundCursor || e.tick > tick) continue;
+    if (e.kind === 'hit') {
+      sound.clash(!!e.blocked);
+      if (!e.blocked) sound.impact(e.damage ?? 12);
+      sound.roar(e.blocked ? 0.4 : 1);
+    } else if (e.kind === 'attack') sound.swing();
+    else if (e.kind === 'miss') sound.swing();
+    else if (e.kind === 'dodge') sound.dodge();
+  }
+  soundCursor = tick;
+}
+
 function frame(now) {
   requestAnimationFrame(frame);
   const m = state.match;
@@ -144,7 +172,13 @@ function frame(now) {
   state.last = now;
   if (state.playing) {
     state.t += dt * state.speed;
-    if (state.t >= m.durationS) { state.t = m.durationS; setPlaying(false); }
+    if (state.t >= m.durationS) {
+      state.t = m.durationS;
+      setPlaying(false);
+      sound.crowd(false);
+      sound.verdict(m.result.winner === 'draw');
+    }
+    playEventsTo(Math.floor(state.t * 1000 / m.tick_ms));
   }
   render();
 }
@@ -182,7 +216,7 @@ export async function open(url) {
     });
     els.seed.textContent = `SEED ${m.seed} · ${m.ticks} TICKS`;
     els.loading.hidden = true;
-    setPlaying(true);
+    soundCursor = 0;
     render();
   } catch (err) {
     els.loading.hidden = false;
@@ -198,7 +232,7 @@ function layoutOnce() {
 }
 
 els.play.addEventListener('click', () => setPlaying(!state.playing));
-els.restart.addEventListener('click', () => { state.t = 0; setPlaying(true); });
+els.restart.addEventListener('click', () => { soundCursor = 0; countIn(); });
 els.speed.addEventListener('change', e => { state.speed = +e.target.value; });
 els.scrub.addEventListener('input', e => {
   if (!state.match) return;
@@ -208,7 +242,8 @@ els.scrub.addEventListener('input', e => {
 addEventListener('keydown', e => {
   if (e.target.matches('input, select, button')) return;
   if (e.code === 'Space') { e.preventDefault(); setPlaying(!state.playing); }
-  if (e.key === 'r' || e.key === 'R') { state.t = 0; setPlaying(true); }
+  if (e.key === 'r' || e.key === 'R') { soundCursor = 0; countIn(); }
+  if (e.key === 'm' || e.key === 'M') { sound.setEnabled(!sound.enabled); syncMute(); }
   if (e.key === 'n' || e.key === 'N') showPicker();
   if (!state.match) return;
   const step = state.match.tick_ms / 1000;
@@ -221,6 +256,8 @@ window.__fbg = {
   state, render,
   get arena() { return arena; },
   get brain() { return brain; },
+  get sound() { return sound; },
+  countIn,
   get panels() { return brainCanvases; },
   get view() { return view; },
   get resizes() { return resizes; },
@@ -369,24 +406,60 @@ function syncRoster() {
   const ready = picked.length === 2 && library.byPair.has(pairKey(...picked));
   els.fight.disabled = !ready;
   els.fight.textContent = ready
-    ? `Fight · ${library.byPair.get(pairKey(...picked)).length} seeds built`
+    ? 'Fight'
     : picked.length === 2 ? 'No match built for that pair'
     : 'Choose two fighters';
 }
 
-function startFight(names) {
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+async function startFight(names) {
   const options = library.byPair.get(pairKey(...names)) ?? [];
   if (!options.length) return;
   const choice = options[Math.floor(Math.random() * options.length)];
   els.picker.hidden = true;
-  open(`data/${choice.slug}.fbg`);
+  // The click that starts a fight is the gesture a browser needs before it
+  // will let any audio play at all.
+  sound.ready();
+  await open(`data/${choice.slug}.fbg`);
+  if (state.match) await countIn();
+}
+
+async function countIn() {
+  setPlaying(false);
+  state.t = 0;
+  soundCursor = 0;
+  render();
+  sound.crowd(true);
+  for (const [i, label] of ['3', '2', '1', 'FIGHT'].entries()) {
+    els.countdown.textContent = label;
+    els.countdown.toggleAttribute('data-go', i === 3);
+    els.countdown.hidden = false;
+    // restart the animation for each number
+    els.countdown.style.animation = 'none';
+    void els.countdown.offsetWidth;
+    els.countdown.style.animation = '';
+    sound.count(i);
+    await wait(i === 3 ? 620 : 700);
+  }
+  els.countdown.hidden = true;
+  setPlaying(true);
 }
 
 function showPicker() {
   setPlaying(false);
+  sound.crowd(false);
   els.picker.hidden = false;
   els.verdict.hidden = true;
+  els.countdown.hidden = true;
 }
+
+function syncMute() {
+  els.mute.textContent = sound.enabled ? '🔊' : '🔇';
+  els.mute.setAttribute('aria-pressed', String(sound.enabled));
+}
+els.mute.addEventListener('click', () => { sound.setEnabled(!sound.enabled); syncMute(); });
+syncMute();
 
 els.fight.addEventListener('click', () => startFight(picked));
 els.random.addEventListener('click', () => {

@@ -3,32 +3,110 @@
   {
    "name": "BASTION",
    "class": "murmillo",
-   "note": "Stopping neuron dominant - turtles behind the scutum. Expect low movement, high block rate."
+   "seed": 8815,
+   "note": "Plants itself behind the shield and waits. Hard to hurt, slow to commit.",
+   "traits": [
+    "octopamine \u00d70.7",
+    "loom gain \u00d71.5",
+    "stopping \u00d72.5"
+   ],
+   "profile": {
+    "octopamine": 0.7,
+    "loom": 1.5,
+    "optic": 1.0,
+    "mechano": 1.0,
+    "escape": 1.0,
+    "stopping": 2.5
+   }
   },
   {
    "name": "CASSIUS",
    "class": "hoplomachus",
-   "note": "Loom detectors amplified, giant fiber trigger-happy. Expect high dodge rate, low commitment."
+   "seed": 1109,
+   "note": "Sees a hit coming early and bolts. Superb at not getting hurt, rarely there to strike.",
+   "traits": [
+    "loom gain \u00d74",
+    "escape threshold \u00d70.4"
+   ],
+   "profile": {
+    "octopamine": 1.0,
+    "loom": 4.0,
+    "optic": 1.0,
+    "mechano": 1.0,
+    "escape": 0.4,
+    "stopping": 1.0
+   }
   },
   {
    "name": "GEMINI-A",
    "class": "thraex",
-   "note": "Baseline profile. Paired with GEMINI-B to test whether identical wiring plus different noise produces different fights."
+   "seed": 1001,
+   "note": "Nothing about it altered. Paired with GEMINI-B, whose brain is identical.",
+   "traits": [
+    "baseline \u2014 nothing altered"
+   ],
+   "profile": {
+    "octopamine": 1.0,
+    "loom": 1.0,
+    "optic": 1.0,
+    "mechano": 1.0,
+    "escape": 1.0,
+    "stopping": 1.0
+   }
   },
   {
    "name": "GEMINI-B",
    "class": "thraex",
-   "note": "Identical to GEMINI-A except the seed. If these two fight the same way, the seed isn't doing anything and the sim is too deterministic to be interesting."
+   "seed": 2002,
+   "note": "The same brain as GEMINI-A, connection for connection. Watch them fight differently.",
+   "traits": [
+    "baseline \u2014 nothing altered"
+   ],
+   "profile": {
+    "octopamine": 1.0,
+    "loom": 1.0,
+    "optic": 1.0,
+    "mechano": 1.0,
+    "escape": 1.0,
+    "stopping": 1.0
+   }
   },
   {
    "name": "NOX",
    "class": "thraex",
-   "note": "Optic lobes ablated - fights blind on mechanosensation alone. Expect erratic movement."
+   "seed": 6203,
+   "note": "Blind. Its eyes connect to nothing, so it fights on vibration alone, and it feels you coming.",
+   "traits": [
+    "optic lobes lesioned",
+    "octopamine \u00d71.4",
+    "mechanosensation \u00d72.2"
+   ],
+   "profile": {
+    "octopamine": 1.4,
+    "loom": 1.0,
+    "optic": 0.0,
+    "mechano": 2.2,
+    "escape": 1.0,
+    "stopping": 1.0
+   }
   },
   {
    "name": "OCTAVIAN",
    "class": "murmillo",
-   "note": "Octopamine cranked - the berserker. Expect high attack rate, poor dodge rate."
+   "seed": 4471,
+   "note": "Aggression hormone turned up three times. Attacks constantly, dodges almost nothing.",
+   "traits": [
+    "octopamine \u00d73",
+    "tachykinin \u00d71.6"
+   ],
+   "profile": {
+    "octopamine": 3.0,
+    "loom": 1.0,
+    "optic": 1.0,
+    "mechano": 1.0,
+    "escape": 1.0,
+    "stopping": 1.0
+   }
   }
  ],
  "matches": [

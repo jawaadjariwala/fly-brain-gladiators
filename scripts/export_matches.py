@@ -119,6 +119,10 @@ def rebuild_index() -> None:
     matches = []
     for path in sorted(OUT.glob("*.fbg")):
         a, b, s = path.stem.split("__")
+        if a > b:
+            # Pairs are slugged alphabetically. A slug the other way round is
+            # from before that was settled, and is superseded by its mirror.
+            continue
         matches.append(_reread(path, a.upper(), b.upper(), int(s.lstrip("s"))))
     write_index(profiles, matches)
     print(f"index.json — {len(matches)} matches, {len(profiles)} fighters")
