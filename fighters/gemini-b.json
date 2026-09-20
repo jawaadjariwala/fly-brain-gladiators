@@ -2,7 +2,7 @@
   "name": "GEMINI-B",
   "class": "thraex",
   "seed": 2002,
-  "note": "The same brain as GEMINI-A, down to the last connection. Watch how differently the two of them fight.",
+  "note": "The same brain as GEMINI-A, connection for connection. Watch them fight differently.",
   "modulation": {
     "octopamine_gain": 1.0,
     "p1_drive": 1.0,

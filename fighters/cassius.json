@@ -2,7 +2,7 @@
   "name": "CASSIUS",
   "class": "hoplomachus",
   "seed": 1109,
-  "note": "Spots an incoming hit early and bolts. Brilliant at not getting hurt, rarely there when it counts.",
+  "note": "Sees a hit coming early and bolts. Superb at not getting hurt, rarely there to strike.",
   "modulation": {
     "octopamine_gain": 1.0,
     "p1_drive": 1.0,

@@ -217,7 +217,6 @@ figure:nth-child(2) figcaption { color: var(--b); }
   .canvas-wrap { aspect-ratio: 1 / 1; }
 }
 
-
 /* --- fighter picker ----------------------------------------------------- */
 .picker {
   position: fixed; inset: 0; z-index: 10;
@@ -255,9 +254,11 @@ figure:nth-child(2) figcaption { color: var(--b); }
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .blurb {
-  margin: 0; max-width: 78ch;
+  margin: 0; max-width: 96ch;
   color: #8b99a8; font-size: clamp(12.5px, 1vw, 14px); line-height: 1.55;
 }
+.blurb strong { color: #e6d9bd; font-weight: 600; }
+.blurb em { color: #cdb890; font-style: italic; }
 
 /* --- roster ------------------------------------------------------------- */
 .roster {
@@ -281,7 +282,7 @@ figure:nth-child(2) figcaption { color: var(--b); }
 .card:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
 
 .card .portrait {
-  display: block; width: 100%; height: 73px;
+  display: block; width: 100%; height: 66px;
   background:
     radial-gradient(ellipse 70% 90% at 50% 120%, rgba(150,120,78,0.16), transparent 70%),
     #0c0f14;
@@ -297,11 +298,11 @@ figure:nth-child(2) figcaption { color: var(--b); }
   letter-spacing: 0.12em; text-transform: uppercase;
   color: #b08d4f; padding: 0 13px 5px;
 }
+/* No clamp. Cards in a grid row share a height anyway, so a description that
+   runs long makes the row taller rather than getting its tail cut off. */
 .card .note {
   font-size: 11.5px; line-height: 1.4; color: #7d8a99;
-  padding: 0 13px 8px;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-  overflow: hidden;
+  padding: 0 13px 9px;
 }
 .card .stats { display: grid; gap: 4px; padding: 0 13px; align-self: end; }
 .card .stat { display: grid; grid-template-columns: 62px 1fr; align-items: center; gap: 8px; }

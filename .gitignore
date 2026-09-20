@@ -1,5 +1,6 @@
 # Connectome data — ~1.1 GB raw, ~205 MB matrix. NEVER commit.
-data/
+# Rooted: an unanchored `data/` also matches web/data/, which ships.
+/data/
 *.npz
 *.npy
 *.h5

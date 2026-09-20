@@ -2,7 +2,7 @@
   "name": "OCTAVIAN",
   "class": "murmillo",
   "seed": 4471,
-  "note": "Its aggression chemical is turned up three times. Attacks constantly and almost never gets out of the way.",
+  "note": "Aggression hormone turned up three times. Attacks constantly, dodges almost nothing.",
   "modulation": {
     "octopamine_gain": 3.0,
     "p1_drive": 1.0,
