@@ -186,7 +186,7 @@ export async function open(url) {
     render();
   } catch (err) {
     els.loading.hidden = false;
-    els.loading.textContent = `could not load the match — ${err.message}`;
+    els.loading.textContent = `could not load the match: ${err.message}`;
     console.error(err);
   }
 }
@@ -369,7 +369,7 @@ function syncRoster() {
   const ready = picked.length === 2 && library.byPair.has(pairKey(...picked));
   els.fight.disabled = !ready;
   els.fight.textContent = ready
-    ? `Fight — ${library.byPair.get(pairKey(...picked)).length} seeds built`
+    ? `Fight · ${library.byPair.get(pairKey(...picked)).length} seeds built`
     : picked.length === 2 ? 'No match built for that pair'
     : 'Choose two fighters';
 }
@@ -414,5 +414,5 @@ loadIndex()
     els.picker.hidden = true;
     els.loading.hidden = false;
     els.loading.textContent =
-      `no match library — run scripts/export_matches.py (${err.message})`;
+      `no match library. Run scripts/export_matches.py (${err.message})`;
   });

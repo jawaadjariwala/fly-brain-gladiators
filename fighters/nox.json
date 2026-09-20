@@ -2,7 +2,7 @@
   "name": "NOX",
   "class": "thraex",
   "seed": 6203,
-  "note": "Blind \u2014 its eyes connect to nothing. Fights on vibration alone, and feels you coming.",
+  "note": "Blind. Its eyes connect to nothing, so it fights on vibration alone, and it feels you coming.",
   "modulation": {
     "octopamine_gain": 1.4,
     "p1_drive": 1.0,
