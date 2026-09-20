@@ -42,11 +42,6 @@ export const LOOKS = {
 };
 export const DEFAULT_LOOK = { color: [148, 160, 174], device: 'boss' };
 
-// The crest follows the class, as it did on the helmets. The murmillo's is the
-// tall fin it is named for, the thraex's the forward-curving griffin, the
-// hoplomachus's a pair of side plumes.
-const CREST = { murmillo: 'fin', thraex: 'griffin', hoplomachus: 'plume' };
-
 const STEEL = '#cdd6e0';
 const STEEL_HI = '#f0f5fa';
 const STEEL_DK = '#8892a0';
@@ -55,39 +50,6 @@ const BRONZE_DK = '#7a5f33';
 const WOOD = '#6b4f35';
 const LEATHER = '#45301f';
 const IRON = '#2b3038';
-
-function drawCrest(ctx, kind, color) {
-  ctx.fillStyle = rgba(color, 0.95);
-  ctx.strokeStyle = 'rgba(14,16,20,0.75)';
-  ctx.lineWidth = 0.05;
-  if (kind === 'plume') {
-    for (const side of [-1, 1]) {
-      ctx.beginPath();
-      ctx.moveTo(1.02, side * 0.14);
-      ctx.quadraticCurveTo(0.80, side * 0.74, 0.16, side * 0.80);
-      ctx.quadraticCurveTo(0.68, side * 0.42, 0.92, side * 0.05);
-      ctx.closePath();
-      ctx.fill(); ctx.stroke();
-    }
-    return;
-  }
-  if (kind === 'griffin') {
-    ctx.beginPath();
-    ctx.moveTo(0.42, -0.14);
-    ctx.quadraticCurveTo(1.44, -0.48, 1.80, 0.04);   // hooks forward over the head
-    ctx.quadraticCurveTo(1.34, -0.14, 1.10, 0.14);
-    ctx.quadraticCurveTo(0.80, 0.22, 0.42, 0.16);
-    ctx.closePath();
-    ctx.fill(); ctx.stroke();
-    return;
-  }
-  ctx.beginPath();                                    // fin, along the midline
-  ctx.moveTo(-0.24, -0.12);
-  ctx.quadraticCurveTo(0.58, -0.54, 1.30, -0.06);
-  ctx.quadraticCurveTo(0.58, 0.22, -0.24, 0.12);
-  ctx.closePath();
-  ctx.fill(); ctx.stroke();
-}
 
 function drawDevice(ctx, kind, r) {
   ctx.fillStyle = 'rgba(20,16,10,0.55)';
@@ -321,8 +283,9 @@ export function drawFly(ctx, { x, y, heading, mm, tint, state, ms, weapon,
     }
   }
 
-  // --- helmet crest, in the fighter's own colours
-  drawCrest(ctx, CREST[weapon] ?? 'fin', look.color);
+  // No crest and no helmet. The weapon is the pointed shape on this animal,
+  // and a second one on the head competed with it; the body already carries
+  // the fighter's colour, so the head is better left as a head.
 
   // --- wings, over the body. A fly's wings fold back across the abdomen, and
   // drawing them under it hides them entirely. Three passes at a spread of
