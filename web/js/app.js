@@ -8,10 +8,22 @@
 import { loadMatch, loadIndex, loadLayout } from './match.js';
 import { Arena } from './arena.js';
 import { BrainPanel, GROUPS } from './brain.js';
-import { drawFly } from './sprite.js';
+import { drawFly, LOOKS, DEFAULT_LOOK } from './sprite.js';
 
-const TINTS = [[90, 200, 226], [236, 104, 78]];
 const $ = sel => document.querySelector(sel);
+const lookOf = name => LOOKS[name] ?? DEFAULT_LOOK;
+const rgbOf = c => `rgb(${c[0]},${c[1]},${c[2]})`;
+
+// Each fighter carries its own colour, so the scoreline, the brain captions and
+// the meters all follow whoever is actually in the arena rather than a fixed
+// blue-and-orange. One source of truth: the sprite tint and the CSS variables
+// are set from the same pair.
+function applyColours(names) {
+  const tints = names.map(n => lookOf(n).color);
+  document.documentElement.style.setProperty('--a', rgbOf(tints[0]));
+  document.documentElement.style.setProperty('--b', rgbOf(tints[1]));
+  return tints;
+}
 
 const canvas = $('#arena');
 const ctx = canvas.getContext('2d');
@@ -23,7 +35,7 @@ const els = {
   random: $('#randomPick'), newFight: $('#newFight'),
 };
 
-const state = { match: null, t: 0, playing: true, speed: 0.5, last: 0 };
+const state = { match: null, t: 0, playing: true, speed: 0.5, last: 0, tints: [] };
 let arena = null;
 let brain = null;                 // one BrainPanel, drawn into both canvases
 let meterCeilings = null;
@@ -97,7 +109,7 @@ function render() {
   if (!m) return;
   const exact = state.t * 1000 / m.tick_ms;
   const tick = Math.min(Math.floor(exact), m.ticks - 1);
-  arena.draw(ctx, view.w, view.h, view.dpr, m, tick, exact - tick, TINTS);
+  arena.draw(ctx, view.w, view.h, view.dpr, m, tick, exact - tick, state.tints);
   setScore(m, tick);
 
   if (brain) {
@@ -151,6 +163,9 @@ export async function open(url) {
     state.match = m;
     state.t = 0;
     arena = new Arena(m.arena_radius);
+    state.tints = applyColours(m.fighters.map(f => f.name));
+    m.looks = m.fighters.map(f => lookOf(f.name));
+    m.profiles = m.fighters.map(f => profileOf(f.name));
     brain = new BrainPanel(layout);
     buildMeters(m);
     // Scale each meter to what this match actually reaches, with a floor so a
@@ -237,7 +252,9 @@ const LOADOUT = {
 
 // Unpicked fighters are drawn in steel. Picking one shows it in the colour it
 // will actually be in the arena, so the card says which side you are taking.
-const NEUTRAL = [148, 160, 174];
+function profileOf(name) {
+  return library.fighters.find(f => f.name === name)?.profile ?? null;
+}
 
 const portraits = [];
 
@@ -264,6 +281,7 @@ function buildRoster() {
       <span class="note"></span><span class="traits"></span>
       <span class="record"></span>`;
     card.querySelector('.n').textContent = f.name;
+    card.style.setProperty('--own', rgbOf(lookOf(f.name).color));
     card.querySelector('.c').textContent =
       `${f.class} · ${LOADOUT[f.class] ?? ''}`;
     card.querySelector('.note').textContent = f.note ?? '';
@@ -299,16 +317,19 @@ function drawPortraits(now) {
       const ctx = p.canvas.getContext('2d');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, r.width, r.height);
-      const at = picked.indexOf(p.fighter.name);
+      const own = lookOf(p.fighter.name).color;
       // height 0 here: in the arena the sprite is lifted off the ground by
       // its flight altitude, and on a portrait that lift carries the shield
       // off the top of the card.
       drawFly(ctx, {
         x: r.width / 2, y: r.height * 0.58, heading: 0,
         mm: Math.min(r.height * 0.33, 32),
-        tint: at >= 0 ? TINTS[at] : NEUTRAL,
+        // Always its own colour. Selection is carried by the card's border and
+        // badge; a roster of six identical steel flies tells you nothing.
+        tint: own,
         state: 'idle', ms: now, weapon: p.fighter.class,
         flash: 0, height: 0,
+        look: lookOf(p.fighter.name), profile: p.fighter.profile,
       });
     }
   }
@@ -329,7 +350,7 @@ function syncRoster() {
     const at = picked.indexOf(name);
     if (at >= 0) {
       card.dataset.pick = String(at);
-      card.dataset.side = at === 0 ? 'BLUE' : 'RED';
+      card.dataset.side = at === 0 ? 'LEFT' : 'RIGHT';
     } else {
       delete card.dataset.pick;
       delete card.dataset.side;

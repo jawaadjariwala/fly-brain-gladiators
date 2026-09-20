@@ -99,7 +99,15 @@ def write_index(profiles: dict, matches: list[dict]) -> None:
     """The manifest the player reads: who can fight, and what has been built."""
     (OUT / "index.json").write_text(json.dumps({
         "fighters": [{"name": p.name, "class": p.weapon_class, "seed": p.seed,
-                      "note": p.note, "traits": traits(p)}
+                      "note": p.note, "traits": traits(p),
+                      # The raw knobs as well as the readable list, so a
+                      # renderer can show a difference rather than print it —
+                      # a fighter with its optic lobes gone should look blind.
+                      "profile": {"octopamine": p.octopamine_gain,
+                                  "loom": p.loom_gain, "optic": p.optic_gain,
+                                  "mechano": p.mechano_gain,
+                                  "escape": p.gf_threshold,
+                                  "stopping": p.dnp09_gain}}
                      for p in sorted(profiles.values(), key=lambda p: p.name)],
         "matches": matches,
     }, indent=1))

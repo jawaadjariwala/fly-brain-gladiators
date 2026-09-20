@@ -28,6 +28,25 @@ const WEAPON = {
   thraex:      { arm: 'sica',    shield: 'square',  reach: 2.6 },
 };
 
+// --- who is who ------------------------------------------------------------
+// Six colours far enough apart to tell any pairing apart at arena size, and a
+// shield device each. Colour is a presentation choice — a ludus's colours —
+// and is the only thing here that is not read off the profile.
+export const LOOKS = {
+  OCTAVIAN:   { color: [232, 84, 63],   device: 'bolt' },
+  CASSIUS:    { color: [63, 201, 224],  device: 'eye' },
+  BASTION:    { color: [217, 164, 65],  device: 'boss' },
+  'GEMINI-A': { color: [154, 122, 232], device: 'barsA' },
+  'GEMINI-B': { color: [95, 207, 138],  device: 'barsB' },
+  NOX:        { color: [152, 162, 173], device: 'cross' },
+};
+export const DEFAULT_LOOK = { color: [148, 160, 174], device: 'boss' };
+
+// The crest follows the class, as it did on the helmets. The murmillo's is the
+// tall fin it is named for, the thraex's the forward-curving griffin, the
+// hoplomachus's a pair of side plumes.
+const CREST = { murmillo: 'fin', thraex: 'griffin', hoplomachus: 'plume' };
+
 const STEEL = '#cdd6e0';
 const STEEL_HI = '#f0f5fa';
 const STEEL_DK = '#8892a0';
@@ -36,6 +55,68 @@ const BRONZE_DK = '#7a5f33';
 const WOOD = '#6b4f35';
 const LEATHER = '#45301f';
 const IRON = '#2b3038';
+
+function drawCrest(ctx, kind, color) {
+  ctx.fillStyle = rgba(color, 0.95);
+  ctx.strokeStyle = 'rgba(14,16,20,0.75)';
+  ctx.lineWidth = 0.05;
+  if (kind === 'plume') {
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(1.02, side * 0.14);
+      ctx.quadraticCurveTo(0.80, side * 0.74, 0.16, side * 0.80);
+      ctx.quadraticCurveTo(0.68, side * 0.42, 0.92, side * 0.05);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    }
+    return;
+  }
+  if (kind === 'griffin') {
+    ctx.beginPath();
+    ctx.moveTo(0.42, -0.14);
+    ctx.quadraticCurveTo(1.44, -0.48, 1.80, 0.04);   // hooks forward over the head
+    ctx.quadraticCurveTo(1.34, -0.14, 1.10, 0.14);
+    ctx.quadraticCurveTo(0.80, 0.22, 0.42, 0.16);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    return;
+  }
+  ctx.beginPath();                                    // fin, along the midline
+  ctx.moveTo(-0.24, -0.12);
+  ctx.quadraticCurveTo(0.58, -0.54, 1.30, -0.06);
+  ctx.quadraticCurveTo(0.58, 0.22, -0.24, 0.12);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+}
+
+function drawDevice(ctx, kind, r) {
+  ctx.fillStyle = 'rgba(20,16,10,0.55)';
+  ctx.lineWidth = 0.07;
+  ctx.strokeStyle = 'rgba(20,16,10,0.55)';
+  if (kind === 'eye') {
+    ctx.beginPath(); ctx.ellipse(0, 0, r * 0.52, r * 0.30, 0, 0, TAU); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.15, 0, TAU); ctx.fill();
+  } else if (kind === 'bolt') {
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.12, -r * 0.5); ctx.lineTo(r * 0.2, -r * 0.06);
+    ctx.lineTo(-r * 0.02, -r * 0.02); ctx.lineTo(r * 0.14, r * 0.5);
+    ctx.lineTo(-r * 0.2, r * 0.04); ctx.lineTo(r * 0.02, 0);
+    ctx.closePath(); ctx.fill();
+  } else if (kind === 'cross') {
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.45, 0); ctx.lineTo(r * 0.45, 0);
+    ctx.moveTo(0, -r * 0.45); ctx.lineTo(0, r * 0.45);
+    ctx.stroke();
+  } else if (kind === 'barsA' || kind === 'barsB') {
+    const n = kind === 'barsA' ? 1 : 2;
+    for (let i = 0; i < n; i++) {
+      const o = (i - (n - 1) / 2) * r * 0.42;
+      ctx.beginPath();
+      ctx.moveTo(o, -r * 0.42); ctx.lineTo(o, r * 0.42);
+      ctx.stroke();
+    }
+  }
+}
 
 function hilt(ctx, { pommel = 0.11, grip = 0.30, guard = 0.34 }) {
   ctx.fillStyle = BRONZE_DK;
@@ -99,7 +180,7 @@ const ARMS = { gladius: drawGladius, hasta: drawHasta, sica: drawSica };
 // Shields are painted in the fighter's colour with a bronze rim and boss —
 // which is both what a gladiator's shield looked like and the quickest way to
 // tell the two of them apart on a dark floor.
-function drawShield(ctx, kind, face, raised) {
+function drawShield(ctx, kind, face, raised, device) {
   const rim = raised ? '#e8d6a8' : BRONZE;
   ctx.strokeStyle = rim;
   ctx.lineWidth = 0.09;
@@ -121,10 +202,11 @@ function drawShield(ctx, kind, face, raised) {
     ctx.beginPath(); ctx.arc(0, 0, 0.48, 0, TAU);
     ctx.fill(); ctx.stroke();
   }
+  if (device && device !== 'boss') drawDevice(ctx, device, 0.42);
   ctx.beginPath();                        // umbo, the central boss
-  ctx.arc(0, 0, 0.17, 0, TAU);
+  ctx.arc(0, 0, 0.15, 0, TAU);
   ctx.fillStyle = rim; ctx.fill();
-  ctx.beginPath(); ctx.arc(-0.04, -0.04, 0.07, 0, TAU);
+  ctx.beginPath(); ctx.arc(-0.035, -0.035, 0.06, 0, TAU);
   ctx.fillStyle = 'rgba(255,248,224,0.6)'; ctx.fill();
 }
 
@@ -158,7 +240,8 @@ export function drawShadow(ctx, sx, sy, mm, height) {
 }
 
 export function drawFly(ctx, { x, y, heading, mm, tint, state, ms, weapon,
-                               flash = 0, height = 0.55 }) {
+                               flash = 0, height = 0.55, look = DEFAULT_LOOK,
+                               profile = null }) {
   const w = WEAPON[weapon] ?? WEAPON.murmillo;
   const dark = shade(tint, 0.42);
   const beat = (ms / 1000) * TAU * 11;
@@ -209,20 +292,37 @@ export function drawFly(ctx, { x, y, heading, mm, tint, state, ms, weapon,
   ctx.fill();
 
   // --- head and compound eyes
+  //
+  // The eyes are read off the profile, not chosen. A fighter with its optic
+  // lobes lesioned has nothing behind them, and is drawn with the light gone
+  // out of them; one with its looming detectors amplified is drawn wide-eyed.
+  const blind = profile ? profile.optic === 0 : false;
+  const eyeScale = profile ? Math.min(1.35, 0.94 + 0.10 * (profile.loom ?? 1)) : 1;
   ctx.beginPath();
   ctx.arc(1.02, 0, 0.42, 0, TAU);
   ctx.fillStyle = rgba(shade(tint, 0.52), 1);
   ctx.fill();
   for (const side of [-1, 1]) {
     ctx.beginPath();
-    ctx.ellipse(1.1, side * 0.25, 0.29, 0.23, side * 0.35, 0, TAU);
-    ctx.fillStyle = '#b53a2c';
+    ctx.ellipse(1.1, side * 0.25, 0.29 * eyeScale, 0.23 * eyeScale,
+                side * 0.35, 0, TAU);
+    ctx.fillStyle = blind ? '#2f3338' : '#b53a2c';
     ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(1.18, side * 0.29, 0.1, 0.08, side * 0.35, 0, TAU);
-    ctx.fillStyle = 'rgba(255,198,178,0.8)';
-    ctx.fill();
+    if (blind) {
+      ctx.strokeStyle = 'rgba(120,130,140,0.55)';
+      ctx.lineWidth = 0.05;
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.ellipse(1.18, side * 0.29, 0.1 * eyeScale, 0.08 * eyeScale,
+                  side * 0.35, 0, TAU);
+      ctx.fillStyle = 'rgba(255,198,178,0.8)';
+      ctx.fill();
+    }
   }
+
+  // --- helmet crest, in the fighter's own colours
+  drawCrest(ctx, CREST[weapon] ?? 'fin', look.color);
 
   // --- wings, over the body. A fly's wings fold back across the abdomen, and
   // drawing them under it hides them entirely. Three passes at a spread of
@@ -258,7 +358,8 @@ export function drawFly(ctx, { x, y, heading, mm, tint, state, ms, weapon,
     ctx.translate(0.14, -0.84);
     ctx.rotate(-0.06);
   }
-  drawShield(ctx, w.shield, rgba(shade(tint, guarding ? 1.0 : 0.72), 1), guarding);
+  drawShield(ctx, w.shield, rgba(shade(tint, guarding ? 1.0 : 0.72), 1),
+             guarding, look.device);
   ctx.restore();
 
   ctx.save();

@@ -155,6 +155,7 @@ export class Arena {
         ms: (tick * match.tick_ms) % 100000,
         weapon: match.fighters[f.side].weapon,
         flash, height: f.height,
+        look: match.looks?.[f.side], profile: match.profiles?.[f.side],
       });
     }
     return { pxPerMm, cx, cy };

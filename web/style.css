@@ -316,17 +316,14 @@ figure:nth-child(2) figcaption { color: var(--b); }
   padding: 0 13px;
 }
 
-.card[data-pick="0"] { border-color: var(--a); box-shadow: 0 0 0 1px rgba(90,200,226,0.35); }
-.card[data-pick="1"] { border-color: var(--b); box-shadow: 0 0 0 1px rgba(236,104,78,0.35); }
-.card[data-pick="0"] .n { color: var(--a); }
-.card[data-pick="1"] .n { color: var(--b); }
+.card[data-pick] { border-color: var(--own); }
+.card[data-pick] .n { color: var(--own); }
 .card[data-pick]::after {
   content: attr(data-side); position: absolute; top: 10px; right: 12px;
   font: 600 9px/1 'IBM Plex Mono', monospace; letter-spacing: 0.16em;
   padding: 5px 7px; border-radius: 5px; color: #08090c;
 }
-.card[data-pick="0"]::after { background: var(--a); }
-.card[data-pick="1"]::after { background: var(--b); }
+.card[data-pick]::after { background: var(--own); }
 .card[disabled] { opacity: 0.32; cursor: not-allowed; transform: none; }
 .card[disabled]:hover { border-color: #232a34; }
 
