@@ -8,7 +8,7 @@
 // A browser will not start audio without a gesture, so the context is created
 // on the click that starts a fight.
 
-const CLICK_TO_START = 'audio starts on the first fight';
+const MASTER = 0.55;
 
 function noiseBuffer(ctx, seconds = 1) {
   const buf = ctx.createBuffer(1, ctx.sampleRate * seconds, ctx.sampleRate);
@@ -37,9 +37,23 @@ export class Sound {
     if (!AC) return false;
     this.ctx = new AC();
     this.noise = noiseBuffer(this.ctx, 2);
+
+    // Master chain. The tone control matters more than the volume: what makes
+    // repeated combat sound harsh is the top end, so everything is rolled off
+    // above 5 kHz and run through a compressor that keeps a flurry of hits
+    // from stacking into a spike.
     this.master = this.ctx.createGain();
-    this.master.gain.value = this.enabled ? 0.85 : 0;
-    this.master.connect(this.ctx.destination);
+    this.master.gain.value = this.enabled ? MASTER : 0;
+
+    const tone = this.ctx.createBiquadFilter();
+    tone.type = 'lowpass'; tone.frequency.value = 5200; tone.Q.value = 0.5;
+
+    const comp = this.ctx.createDynamicsCompressor();
+    comp.threshold.value = -20; comp.knee.value = 24;
+    comp.ratio.value = 5; comp.attack.value = 0.004; comp.release.value = 0.22;
+
+    this.master.connect(tone); tone.connect(comp);
+    comp.connect(this.ctx.destination);
     return true;
   }
 
@@ -47,7 +61,7 @@ export class Sound {
     this.enabled = on;
     try { localStorage.setItem('fbg-sound', on ? 'on' : 'off'); } catch { /* ignore */ }
     if (this.master) {
-      this.master.gain.setTargetAtTime(on ? 0.85 : 0, this.ctx.currentTime, 0.02);
+      this.master.gain.setTargetAtTime(on ? MASTER : 0, this.ctx.currentTime, 0.02);
     }
     if (on) this.ready();
   }
@@ -89,16 +103,16 @@ export class Sound {
   clash(blocked = false) {
     if (!this.ready() || !this.enabled) return;
     const t = this.ctx.currentTime;
-    const base = (blocked ? 620 : 1450) * (0.92 + Math.random() * 0.18);
-    const partials = blocked ? [1, 1.72, 2.31] : [1, 1.51, 2.14, 3.07, 4.21];
+    const base = (blocked ? 470 : 880) * (0.94 + Math.random() * 0.14);
+    const partials = blocked ? [1, 1.66, 2.24] : [1, 1.48, 2.02, 2.71];
     partials.forEach((r, i) => {
-      this._tone(t, blocked ? 0.45 : 0.30, base * r, {
-        type: i > 2 ? 'sine' : 'triangle',
-        gain: (blocked ? 0.16 : 0.13) / (1 + i * 0.7),
+      this._tone(t, blocked ? 0.40 : 0.26, base * r, {
+        type: 'sine',
+        gain: (blocked ? 0.13 : 0.11) / (1 + i * 1.1),
       });
     });
-    this._noise(t, blocked ? 0.10 : 0.07, {
-      freq: blocked ? 1600 : 4200, q: 1.2, gain: blocked ? 0.16 : 0.2,
+    this._noise(t, blocked ? 0.07 : 0.05, {
+      freq: blocked ? 1100 : 2300, q: 1.6, gain: blocked ? 0.07 : 0.08,
     });
   }
 
@@ -106,15 +120,15 @@ export class Sound {
   impact(damage = 12) {
     if (!this.ready() || !this.enabled) return;
     const t = this.ctx.currentTime;
-    this._tone(t, 0.20, 190, { type: 'sine', to: 55,
-                               gain: 0.22 + Math.min(damage, 20) / 120 });
-    this._noise(t, 0.09, { type: 'lowpass', freq: 700, gain: 0.2 });
+    this._tone(t, 0.18, 170, { type: 'sine', to: 52,
+                               gain: 0.16 + Math.min(damage, 20) / 220 });
+    this._noise(t, 0.07, { type: 'lowpass', freq: 520, gain: 0.10 });
   }
 
   swing() {
     if (!this.ready() || !this.enabled) return;
     const t = this.ctx.currentTime;
-    this._noise(t, 0.22, { freq: 520, sweepTo: 1900, q: 2.2, gain: 0.13 });
+    this._noise(t, 0.20, { freq: 420, sweepTo: 1200, q: 2.6, gain: 0.055 });
   }
 
   // Wingbeat. A fly's is around 200 Hz, which is a real pitch, so the dodge
@@ -122,34 +136,53 @@ export class Sound {
   dodge() {
     if (!this.ready() || !this.enabled) return;
     const t = this.ctx.currentTime;
-    this._tone(t, 0.26, 210, { type: 'sawtooth', to: 150, gain: 0.10 });
-    this._noise(t, 0.24, { freq: 900, sweepTo: 300, q: 1.6, gain: 0.09 });
+    this._tone(t, 0.24, 205, { type: 'triangle', to: 150, gain: 0.07 });
+    this._noise(t, 0.22, { freq: 700, sweepTo: 280, q: 1.8, gain: 0.05 });
   }
 
+  // A struck ping rather than a beep: a sine with a fast attack, a partial
+  // near three times the fundamental, and a long tail. That is roughly how a
+  // small bell behaves, and it is what a countdown in a game sounds like.
   count(step) {
     if (!this.ready() || !this.enabled) return;
     const t = this.ctx.currentTime;
     if (step < 3) {
-      this._tone(t, 0.20, [392, 440, 494][step], { type: 'square', gain: 0.12 });
+      const f = [784, 880, 988][step];
+      this._tone(t, 0.55, f, { type: 'sine', gain: 0.16, attack: 0.002 });
+      this._tone(t, 0.30, f * 2.98, { type: 'sine', gain: 0.045, attack: 0.002 });
+      this._tone(t, 0.16, f * 5.4, { type: 'sine', gain: 0.018, attack: 0.001 });
       return;
     }
-    for (const [i, f] of [220, 277, 330, 440].entries()) {      // horn
-      this._tone(t + i * 0.012, 0.9, f, {
-        type: 'sawtooth', gain: 0.10 / (1 + i * 0.5), attack: 0.02,
+    // GO: a fifth under the last ping, struck harder and left to ring.
+    for (const [i, f] of [330, 495, 660, 990].entries()) {
+      this._tone(t + i * 0.008, 1.5 - i * 0.2, f, {
+        type: i < 2 ? 'triangle' : 'sine',
+        gain: 0.15 / (1 + i * 0.8), attack: 0.004,
       });
     }
-    this._noise(t, 0.5, { type: 'lowpass', freq: 900, gain: 0.12 });
+    this._noise(t, 0.35, { type: 'lowpass', freq: 700, gain: 0.09 });
   }
 
+  // A win resolves upward and stays; a draw falls and is left hanging. Both
+  // are stacked thirds on triangles rather than a bare sawtooth, which reads
+  // as a fanfare instead of an alarm.
   verdict(draw = false) {
     if (!this.ready() || !this.enabled) return;
     const t = this.ctx.currentTime;
-    const notes = draw ? [294, 294, 262] : [330, 392, 523];
-    notes.forEach((f, i) => {
-      this._tone(t + i * 0.16, 0.8, f, {
-        type: 'sawtooth', gain: 0.10, attack: 0.02,
+    const line = draw ? [[392, 0], [349, 0.22], [294, 0.44]]
+                      : [[392, 0], [523, 0.16], [659, 0.32]];
+    for (const [f, at] of line) {
+      this._tone(t + at, draw ? 1.1 : 1.6, f, {
+        type: 'triangle', gain: 0.13, attack: 0.012,
       });
-    });
+      this._tone(t + at, draw ? 0.9 : 1.3, f * 1.5, {
+        type: 'sine', gain: 0.05, attack: 0.012,
+      });
+      this._tone(t + at, draw ? 1.1 : 1.6, f / 2, {
+        type: 'triangle', gain: 0.07, attack: 0.02,
+      });
+    }
+    if (!draw) this.roar(1.4);
   }
 
   // --- crowd -------------------------------------------------------------
@@ -182,4 +215,3 @@ export class Sound {
   }
 }
 
-export { CLICK_TO_START };

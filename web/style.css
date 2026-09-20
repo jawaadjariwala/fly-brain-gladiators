@@ -104,19 +104,33 @@ body {
 #arena { display: block; width: 100%; height: 100%; }
 .loading, .verdict, .countdown {
   position: absolute; inset: 0;
-  display: grid; place-content: center;
+  display: grid; place-items: center; place-content: center;
   text-align: center;
 }
+/* The digits are centred on their cap-height box, which sits a little above
+   the middle of the line box. Nudge so the number sits on the arena's centre
+   rather than the text box's. */
+.countdown { padding-bottom: 0.1em; }
 .loading { color: var(--muted); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
 .countdown {
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(64px, 12vw, 190px);
-  font-weight: 700; line-height: 1; color: #f2e6cd;
-  text-shadow: 0 0 60px rgba(0,0,0,0.8);
+  font-size: clamp(150px, 27vw, 430px);
+  /* Cormorant defaults to old-style figures, where 1 sits at x-height and
+     reads as a Roman I, and 3 hangs below the baseline. Lining figures give
+     every digit the same cap-height box, which fixes both the shape and the
+     way they jumped about between numbers. */
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+  font-weight: 700; line-height: 1; color: #f7ecd6;
+  text-shadow: 0 0 80px rgba(0, 0, 0, 0.9), 0 0 24px rgba(0, 0, 0, 0.7);
   pointer-events: none;
-  animation: countPop 720ms ease-out;
+  animation: countPop 700ms ease-out;
 }
-.countdown[data-go] { font-size: clamp(44px, 8vw, 120px); letter-spacing: 0.06em; }
+.countdown[data-go] {
+  font-size: clamp(64px, 11vw, 168px);
+  letter-spacing: 0.08em;
+  color: #ffe9b8;
+}
 @keyframes countPop {
   0%   { transform: scale(1.5); opacity: 0; }
   18%  { transform: scale(1);   opacity: 1; }
