@@ -230,7 +230,7 @@ figure:nth-child(2) figcaption { color: var(--b); }
 .picker-inner {
   min-height: 100%;
   display: grid; align-content: center; justify-items: center;
-  gap: clamp(10px, 1.4vh, 17px);
+  gap: clamp(9px, 1.2vh, 15px);
   padding: clamp(16px, 2.6vh, 32px) clamp(18px, 4vw, 48px);
   max-width: 1080px; margin: 0 auto;
 }
@@ -246,7 +246,10 @@ figure:nth-child(2) figcaption { color: var(--b); }
   margin: 0;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: clamp(34px, 5.2vw, 64px);
-  font-weight: 700; line-height: 1; letter-spacing: 0.01em;
+  /* Room for the descender on the y: background-clip crops to the text box,
+     and at line-height 1 that box cuts the tail off. */
+  font-weight: 700; line-height: 1.12; letter-spacing: 0.01em;
+  padding-bottom: 0.04em;
   text-wrap: balance;
   background: linear-gradient(180deg, #f6efe2 0%, #cdb890 100%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -278,7 +281,7 @@ figure:nth-child(2) figcaption { color: var(--b); }
 .card:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
 
 .card .portrait {
-  display: block; width: 100%; height: 78px;
+  display: block; width: 100%; height: 73px;
   background:
     radial-gradient(ellipse 70% 90% at 50% 120%, rgba(150,120,78,0.16), transparent 70%),
     #0c0f14;
@@ -300,20 +303,16 @@ figure:nth-child(2) figcaption { color: var(--b); }
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.card .traits {
-  display: flex; flex-wrap: wrap; gap: 4px;
-  padding: 0 13px 8px;
+.card .stats { display: grid; gap: 4px; padding: 0 13px; align-self: end; }
+.card .stat { display: grid; grid-template-columns: 62px 1fr; align-items: center; gap: 8px; }
+.card .stat b {
+  font: 500 8.5px/1 'IBM Plex Mono', monospace;
+  letter-spacing: 0.08em; color: #6f7d8c; font-weight: 500;
 }
-.card .traits span {
-  font: 500 9.5px/1 'IBM Plex Mono', monospace;
-  letter-spacing: 0.04em;
-  padding: 3px 6px; border-radius: 5px;
-  background: #1b2029; color: #93a2b1; border: 1px solid #262e39;
-}
-.card .record {
-  font: 500 10px/1 'IBM Plex Mono', monospace;
-  letter-spacing: 0.08em; color: #5d6b7a;
-  padding: 0 13px;
+.card .stat i { display: block; height: 4px; border-radius: 2px; background: #1b2029; }
+.card .stat u {
+  display: block; height: 100%; border-radius: 2px;
+  background: var(--own); text-decoration: none;
 }
 
 .card[data-pick] { border-color: var(--own); }
@@ -371,6 +370,10 @@ figure:nth-child(2) figcaption { color: var(--b); }
 }
 .provenance p { margin: 0; }
 .provenance strong { color: #8b99a8; font-weight: 500; }
+.provenance .credit {
+  font-size: 12.5px; color: #8b99a8; margin-bottom: 2px;
+}
+.provenance .credit a { color: #d9c396; font-weight: 500; }
 .provenance a { color: #b08d4f; text-decoration: none; }
 .provenance a:hover { text-decoration: underline; }
 

@@ -2,7 +2,7 @@
   "name": "CASSIUS",
   "class": "hoplomachus",
   "seed": 1109,
-  "note": "Loom detectors amplified, giant fiber trigger-happy. Expect high dodge rate, low commitment.",
+  "note": "Spots an incoming hit early and bolts. Brilliant at not getting hurt, rarely there when it counts.",
   "modulation": {
     "octopamine_gain": 1.0,
     "p1_drive": 1.0,

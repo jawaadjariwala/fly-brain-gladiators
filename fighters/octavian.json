@@ -2,7 +2,7 @@
   "name": "OCTAVIAN",
   "class": "murmillo",
   "seed": 4471,
-  "note": "Octopamine cranked - the berserker. Expect high attack rate, poor dodge rate.",
+  "note": "Its aggression chemical is turned up three times. Attacks constantly and almost never gets out of the way.",
   "modulation": {
     "octopamine_gain": 3.0,
     "p1_drive": 1.0,

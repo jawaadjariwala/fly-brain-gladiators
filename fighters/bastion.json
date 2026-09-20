@@ -2,7 +2,7 @@
   "name": "BASTION",
   "class": "murmillo",
   "seed": 8815,
-  "note": "Stopping neuron dominant - turtles behind the scutum. Expect low movement, high block rate.",
+  "note": "Plants itself behind a wall of shield and waits. Hard to hurt, slow to commit.",
   "modulation": {
     "octopamine_gain": 0.7,
     "p1_drive": 1.0,

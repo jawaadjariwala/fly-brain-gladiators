@@ -2,7 +2,7 @@
   "name": "NOX",
   "class": "thraex",
   "seed": 6203,
-  "note": "Optic lobes ablated - fights blind on mechanosensation alone. Expect erratic movement.",
+  "note": "Blind. Its eyes connect to nothing, so it fights on vibration alone \u2014 and it feels you coming.",
   "modulation": {
     "octopamine_gain": 1.4,
     "p1_drive": 1.0,

@@ -243,12 +243,29 @@ let picked = [];
 
 const pairKey = (a, b) => [a, b].sort().join('|');
 
-// What each class actually carries, for the card subtitle.
+// What each class carries, named so it means something to someone who has
+// never heard of a murmillo.
 const LOADOUT = {
-  murmillo: 'gladius & scutum',
-  hoplomachus: 'hasta & parmula',
-  thraex: 'sica & parmula',
+  murmillo: 'short sword · tower shield',
+  hoplomachus: 'long spear · round shield',
+  thraex: 'curved blade · square shield',
 };
+
+// A stat block, worked out from the real knobs in each profile. The numbers
+// underneath are a neuromodulator level, a sensory gain and a firing
+// threshold; nobody needs to know that to read the bars.
+const STATS = [
+  { key: 'AGGRESSION', of: p => 45 * p.octopamine },
+  { key: 'REFLEXES',   of: p => 45 * p.loom / Math.max(p.escape, 0.2) },
+  { key: 'EYESIGHT',   of: p => 72 * p.optic },
+  { key: 'INSTINCT',   of: p => 45 * p.mechano },
+  { key: 'GUARD',      of: p => 45 * p.stopping },
+];
+
+const statsFor = p => STATS.map(s => ({
+  key: s.key,
+  value: p ? Math.max(0, Math.min(100, Math.round(s.of(p)))) : 0,
+}));
 
 // Unpicked fighters are drawn in steel. Picking one shows it in the colour it
 // will actually be in the arena, so the card says which side you are taking.
@@ -257,17 +274,6 @@ function profileOf(name) {
 }
 
 const portraits = [];
-
-function record(name) {
-  let w = 0, l = 0, d = 0;
-  for (const m of library.matches) {
-    if (m.a !== name && m.b !== name) continue;
-    if (m.winner === 'draw') d++;
-    else if (m.winner === name) w++;
-    else l++;
-  }
-  return { w, l, d, n: w + l + d };
-}
 
 function buildRoster() {
   els.roster.textContent = '';
@@ -278,22 +284,18 @@ function buildRoster() {
     card.type = 'button';
     card.innerHTML = `<canvas class="portrait"></canvas>
       <span class="n"></span><span class="c"></span>
-      <span class="note"></span><span class="traits"></span>
-      <span class="record"></span>`;
+      <span class="note"></span><span class="stats"></span>`;
     card.querySelector('.n').textContent = f.name;
     card.style.setProperty('--own', rgbOf(lookOf(f.name).color));
-    card.querySelector('.c').textContent =
-      `${f.class} · ${LOADOUT[f.class] ?? ''}`;
+    card.querySelector('.c').textContent = LOADOUT[f.class] ?? f.class;
     card.querySelector('.note').textContent = f.note ?? '';
-    for (const t of f.traits ?? []) {
-      const chip = document.createElement('span');
-      chip.textContent = t;
-      card.querySelector('.traits').append(chip);
+    const stats = card.querySelector('.stats');
+    for (const st of statsFor(f.profile)) {
+      const row = document.createElement('span');
+      row.className = 'stat';
+      row.innerHTML = `<b>${st.key}</b><i><u style="width:${st.value}%"></u></i>`;
+      stats.append(row);
     }
-    const r = record(f.name);
-    card.querySelector('.record').textContent = r.n
-      ? `${r.w}W · ${r.l}L · ${r.d} drawn — ${r.n} matches built`
-      : 'no matches built yet';
     card.addEventListener('click', () => togglePick(f.name));
     els.roster.append(card);
     portraits.push({ canvas: card.querySelector('.portrait'), fighter: f });

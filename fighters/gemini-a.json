@@ -2,7 +2,7 @@
   "name": "GEMINI-A",
   "class": "thraex",
   "seed": 1001,
-  "note": "Baseline profile. Paired with GEMINI-B to test whether identical wiring plus different noise produces different fights.",
+  "note": "Nothing about this one has been altered. Paired with GEMINI-B, whose brain is identical.",
   "modulation": {
     "octopamine_gain": 1.0,
     "p1_drive": 1.0,
