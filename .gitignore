@@ -42,3 +42,7 @@ venv/
 # The match library IS the site's content — it ships. Rebuild it with
 # scripts/export_matches.py; it is regenerable, but the published player
 # needs it present.
+# Two matches from an early test run, written before pair slugs were ordered
+# alphabetically. Superseded by cassius__octavian__*, not in index.json, and
+# left on disk rather than deleted.
+web/data/octavian__cassius__s*.fbg
